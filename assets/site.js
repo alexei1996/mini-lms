@@ -65,7 +65,9 @@
     document.title = course.title;
     root.append(el("h1", null, course.title));
 
-    var empty = course.presentations.length === 0 && course.tests.length === 0;
+    var sections = course.sections || [];
+    var hasText = sections.some(function (section) { return section.text; });
+    var empty = course.presentations.length === 0 && !hasText && course.tests.length === 0;
     if (empty) {
       root.append(
         el("p", "message", "В этом курсе пока ничего не опубликовано.")
@@ -80,6 +82,16 @@
         presentation.title
       );
     }, "Презентаций пока нет."));
+
+    root.append(el("h2", null, "Методические материалы"));
+    var materials = sections.filter(function (section) { return section.text; });
+    if (materials.length === 0) {
+      root.append(el("p", "empty", "Материалов пока нет."));
+    } else {
+      materials.forEach(function (section) {
+        root.append(el("p", "reading", section.text));
+      });
+    }
 
     root.append(el("h2", null, "Тесты"));
     root.append(itemList(course.tests, function (test) {

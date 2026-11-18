@@ -38,6 +38,26 @@ class CatalogTest(unittest.TestCase):
         catalog.set_published(course, presentation["id"], False)
         self.assertEqual(catalog.public_course(course)["presentations"], [])
 
+    def test_section_text_stays_hidden_until_published(self):
+        course = catalog.create_course("Курс", [])
+        catalog.ensure_sections(course)
+        catalog.set_section(course, "method", "Для ученика", False)
+        self.assertEqual(catalog.public_course(course)["sections"], [])
+        catalog.set_section(course, "method", "Для ученика", True)
+        visible = catalog.public_course(course)["sections"]
+        self.assertEqual(visible[0]["text"], "Для ученика")
+        self.assertNotIn("published", visible[0])
+
+    def test_delete_removes_course_presentation_and_test(self):
+        course = catalog.create_course("Курс", [])
+        presentation = catalog.add_prepared_presentation(course)
+        course["tests"].append({"id": "t1", "title": "Проверка"})
+        catalog.delete_presentation(course, presentation["id"])
+        catalog.delete_test(course, "t1")
+        self.assertEqual(course["presentations"], [])
+        self.assertEqual(course["tests"], [])
+        self.assertEqual(catalog.delete_course([course], course["id"]), [])
+
     def test_password_check_does_not_accept_a_wrong_pair(self):
         login = {"email": "teacher@localhost", "password": "secret-pass"}
         self.assertTrue(catalog.password_matches(login, "teacher@localhost", "secret-pass"))

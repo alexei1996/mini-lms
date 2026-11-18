@@ -113,7 +113,12 @@
 
   function courseCard(course) {
     var card = el("section", "card");
-    card.append(el("h2", null, course.title));
+    var titleRow = el("div", "row");
+    titleRow.append(el("h2", null, course.title));
+    titleRow.append(removeButton("Удалить курс «" + course.title + "»?", {
+      courseId: course.id,
+    }));
+    card.append(titleRow);
     var link = el("a", "text-link", "Ссылка для ученика");
     link.href = "course.html?course=" + encodeURIComponent(course.id);
     card.append(link);
@@ -142,6 +147,10 @@
         }).then(showCourses);
       });
       row.append(toggle);
+      row.append(removeButton("Удалить презентацию «" + presentation.title + "»?", {
+        courseId: course.id,
+        presentationId: presentation.id,
+      }));
       if (presentation.slides && presentation.slides.length) {
         var thumbs = el("div", "thumbs");
         presentation.slides.forEach(function (src, index) {
@@ -154,7 +163,72 @@
       }
       card.append(row);
     });
+
+    card.append(materialsEditor(course));
+
+    card.append(el("h3", null, "Тесты"));
+    if (!course.tests || course.tests.length === 0) {
+      card.append(el("p", "empty", "Тестов пока нет."));
+    } else {
+      course.tests.forEach(function (test) {
+        var testRow = el("div", "row");
+        testRow.append(el("p", null, test.title));
+        testRow.append(removeButton("Удалить тест «" + test.title + "»?", {
+          courseId: course.id,
+          testId: test.id,
+        }));
+        card.append(testRow);
+      });
+    }
     return card;
+  }
+
+  function materialsEditor(course) {
+    var section = (course.sections || []).filter(function (item) {
+      return item.id === "method";
+    })[0] || { id: "method", text: "", published: false };
+    var block = el("section", null);
+    block.append(el("h3", null, "Методические материалы"));
+    var state = section.published ? "Опубликованы" : "Черновик";
+    block.append(el("p", null, state));
+    var area = document.createElement("textarea");
+    area.value = section.text || "";
+    var row = el("div", "row");
+    var save = el("button", "button", "Сохранить");
+    save.type = "button";
+    save.addEventListener("click", function () {
+      sendSection(course.id, section.id, area.value, section.published);
+    });
+    var toggle = el("button", "button", section.published ? "Снять с публикации" : "Опубликовать");
+    toggle.type = "button";
+    toggle.addEventListener("click", function () {
+      sendSection(course.id, section.id, area.value, !section.published);
+    });
+    row.append(save, toggle);
+    block.append(area, row);
+    return block;
+  }
+
+  function sendSection(courseId, sectionId, text, published) {
+    api("/api/section", {
+      courseId: courseId,
+      sectionId: sectionId,
+      text: text,
+      published: published,
+    }).then(function (result) {
+      notice = result.ok ? "Текст раздела сохранён." : "Не удалось сохранить раздел.";
+      showCourses();
+    });
+  }
+
+  function removeButton(question, body) {
+    var button = el("button", "button button-quiet", "Удалить");
+    button.type = "button";
+    button.addEventListener("click", function () {
+      if (!window.confirm(question)) return;
+      api("/api/delete", body).then(showCourses);
+    });
+    return button;
   }
 
   function uploadControl(course) {
@@ -165,6 +239,8 @@
     input.addEventListener("change", function () {
       var file = input.files && input.files[0];
       if (!file) return;
+      var wait = el("p", "message", "Готовим картинки слайдов. Это может занять минуту.");
+      label.after(wait);
       var reader = new FileReader();
       reader.onload = function () {
         var encoded = String(reader.result).split(",")[1];
@@ -173,7 +249,10 @@
           filename: file.name,
           contentBase64: encoded,
         }).then(function (result) {
-          notice = result.ok ? "" : "Можно загрузить только PDF или PowerPoint.";
+          if (result.ok) notice = "";
+          else if (result.payload && result.payload.error === "render") {
+            notice = "Не удалось нарисовать слайды. Закройте PowerPoint и загрузите файл ещё раз.";
+          } else notice = "Можно загрузить только PDF или PowerPoint.";
           showCourses();
         });
       };

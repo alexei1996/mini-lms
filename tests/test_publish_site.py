@@ -25,6 +25,7 @@ class PublishSiteTest(unittest.TestCase):
         catalog = publish_site.published_catalog(courses)
         self.assertEqual(catalog[0]["presentations"], [])
         self.assertEqual(catalog[0]["tests"], [])
+        self.assertEqual(catalog[0]["sections"], [])
 
     def test_published_upload_points_at_repo_images_not_the_source_file(self):
         courses = [{
@@ -77,6 +78,31 @@ class PublishSiteTest(unittest.TestCase):
             self.assertEqual(len(catalog[0]["presentations"]), 1)
             self.assertNotIn(".pptx", json.dumps(catalog))
             self.assertNotIn(".pdf", json.dumps(catalog))
+
+    def test_only_published_section_text_reaches_the_catalog(self):
+        courses = [{
+            "id": "c1",
+            "title": "Курс",
+            "presentations": [],
+            "tests": [],
+            "sections": [
+                {
+                    "id": "method",
+                    "title": "Методические материалы",
+                    "text": "видно ученику",
+                    "published": True,
+                },
+                {
+                    "id": "draft",
+                    "title": "Черновик",
+                    "text": "скрыто",
+                    "published": False,
+                },
+            ],
+        }]
+        sections = publish_site.published_catalog(courses)[0]["sections"]
+        self.assertEqual([item["text"] for item in sections], ["видно ученику"])
+        self.assertNotIn("published", sections[0])
 
 
 if __name__ == "__main__":

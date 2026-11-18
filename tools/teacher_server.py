@@ -5,6 +5,7 @@ import binascii
 import json
 import re
 import secrets
+import shutil
 import subprocess
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -48,7 +49,10 @@ def ensure_login():
 
 
 def courses():
-    return load_json(COURSES_FILE, [])
+    items = load_json(COURSES_FILE, [])
+    for course in items:
+        catalog.ensure_sections(course)
+    return items
 
 
 def save_courses(items):
@@ -61,17 +65,26 @@ def push_published_files():
     git = ["git", "-C", str(ROOT)]
     subprocess.run(git + ["add", "-A", "--", "published/catalog.json", "slides/published"], check=False)
     staged = subprocess.run(git + ["diff", "--cached", "--quiet"])
-    if staged.returncode == 0:
+    if staged.returncode != 0:
+        subprocess.run(
+            git + [
+                "-c", "user.name=alexei1996",
+                "-c", "user.email=alexei1996@users.noreply.github.com",
+                "commit", "-m", "Publish slide images",
+            ],
+            check=False,
+        )
+    ahead = subprocess.run(
+        git + ["rev-list", "--count", "origin/main..HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    if ahead.returncode != 0 or ahead.stdout.strip() in ("", "0"):
         return
     subprocess.run(
-        git + [
-            "-c", "user.name=alexei1996",
-            "-c", "user.email=alexei1996@users.noreply.github.com",
-            "commit", "-m", "Publish slide images",
-        ],
+        git + ["-c", "http.postBuffer=524288000", "-c", "http.version=HTTP/1.1", "push", "origin", "HEAD"],
         check=False,
     )
-    subprocess.run(git + ["push", "origin", "HEAD"], check=False)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -173,11 +186,41 @@ class Handler(SimpleHTTPRequestHandler):
             except KeyError:
                 self.respond({"error": "missing"}, 404)
                 return
+        elif path == "/api/section":
+            try:
+                catalog.set_section(
+                    course,
+                    body.get("sectionId", ""),
+                    body.get("text", ""),
+                    body.get("published"),
+                )
+            except KeyError:
+                self.respond({"error": "missing"}, 404)
+                return
+        elif path == "/api/delete":
+            self.delete(body, items, course)
+            return
         else:
             self.respond({"error": "missing"}, 404)
             return
         save_courses(items)
         self.respond(course)
+
+    def delete(self, body, items, course):
+        try:
+            if body.get("testId"):
+                catalog.delete_test(course, body.get("testId"))
+            elif body.get("presentationId"):
+                catalog.delete_presentation(course, body.get("presentationId"))
+                shutil.rmtree(SLIDE_DIR / course["id"] / body.get("presentationId"), ignore_errors=True)
+            else:
+                items[:] = catalog.delete_course(items, course["id"])
+                shutil.rmtree(SLIDE_DIR / course["id"], ignore_errors=True)
+        except KeyError:
+            self.respond({"error": "missing"}, 404)
+            return
+        save_courses(items)
+        self.respond({"ok": True})
 
     def upload(self, body, items):
         course = self.find(body.get("courseId", ""), items)
@@ -190,7 +233,11 @@ class Handler(SimpleHTTPRequestHandler):
                 base64.b64decode(body.get("contentBase64") or ""),
                 filename,
             )
-        except (import_deck.DeckError, ValueError, binascii.Error):
+        except import_deck.DeckError as error:
+            code = "render" if str(error) == "render" else "type"
+            self.respond({"error": code}, 400)
+            return
+        except (ValueError, binascii.Error):
             self.respond({"error": "type"}, 400)
             return
         title = Path(filename).stem or "Презентация"

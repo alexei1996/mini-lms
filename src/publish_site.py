@@ -19,9 +19,23 @@ def published_catalog(courses):
             "id": course["id"],
             "title": course["title"],
             "presentations": presentations,
+            "sections": public_sections(course),
             "tests": [],
         })
     return catalog
+
+
+def public_sections(course):
+    visible = []
+    for section in course.get("sections", []):
+        if not section.get("published"):
+            continue
+        visible.append({
+            "id": section["id"],
+            "title": section["title"],
+            "text": section.get("text") or "",
+        })
+    return visible
 
 
 def public_slide_paths(course_id, presentation):

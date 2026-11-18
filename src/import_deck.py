@@ -1,4 +1,7 @@
 import io
+import subprocess
+import tempfile
+import threading
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree
@@ -39,7 +42,17 @@ def pdf_slides(data):
     return slides
 
 
+OFFICE_LOCK = threading.Lock()
+POWERPOINT = Path(r"C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE")
+SOFFICE = Path(r"C:\Program Files\LibreOffice\program\soffice.exe")
+
+
 def pptx_slides(data):
+    if office_package(data):
+        images = rendered_slides(data)
+        if not images:
+            raise DeckError("render")
+        return images
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
         texts = slide_texts(archive)
@@ -48,6 +61,113 @@ def pptx_slides(data):
     if not texts:
         raise DeckError("empty powerpoint")
     return [text_slide(text) for text in texts]
+
+
+def office_package(data):
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = archive.namelist()
+    except zipfile.BadZipFile:
+        return False
+    return any(
+        name.startswith("ppt/slideMasters/") or name == "docProps/app.xml"
+        for name in names
+    )
+
+
+def rendered_slides(data):
+    with OFFICE_LOCK:
+        if POWERPOINT.exists():
+            images = powerpoint_slides(data)
+            if images:
+                return images
+        if SOFFICE.exists():
+            return libreoffice_slides(data)
+    return None
+
+
+def powerpoint_slides(data):
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        source = root / "deck.pptx"
+        source.write_bytes(data)
+        out = root / "slides"
+        out.mkdir()
+        script = root / "export.ps1"
+        script.write_text(POWERPOINT_EXPORT, encoding="utf-8-sig")
+        try:
+            subprocess.run(
+                ["powershell", "-NoProfile", "-File", str(script), str(source), str(out)],
+                check=False,
+                timeout=600,
+                capture_output=True,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        paths = sorted(out.glob("*.png"), key=lambda path: int(path.stem))
+        images = [path.read_bytes() for path in paths if path.stat().st_size > 0]
+        return images or None
+
+
+POWERPOINT_EXPORT = r"""
+param($Source, $OutDir)
+$started = $false
+try {
+  $app = [Runtime.InteropServices.Marshal]::GetActiveObject("PowerPoint.Application")
+} catch {
+  $app = New-Object -ComObject PowerPoint.Application
+  $started = $true
+}
+$app.Visible = -1
+$presentation = $app.Presentations.Open($Source, $true, $false, $false)
+try {
+  $number = 1
+  foreach ($slide in $presentation.Slides) {
+    $target = Join-Path $OutDir ($number.ToString() + ".png")
+    $slide.Export($target, "PNG", 1920, 1080)
+    $number++
+  }
+} finally {
+  $presentation.Close()
+  if ($started) { $app.Quit() }
+}
+"""
+
+
+def libreoffice_slides(data):
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        source = root / "deck.pptx"
+        source.write_bytes(data)
+        profile = (root / "profile").resolve().as_uri()
+        try:
+            subprocess.run(
+                [
+                    str(SOFFICE),
+                    "--headless",
+                    "--nologo",
+                    "--nofirststartwizard",
+                    "--norestore",
+                    "-env:UserInstallation=%s" % profile,
+                    "--convert-to",
+                    "pdf",
+                    "--outdir",
+                    str(root),
+                    str(source),
+                ],
+                check=False,
+                timeout=600,
+                capture_output=True,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        pdf = root / "deck.pdf"
+        if not pdf.is_file():
+            return None
+        try:
+            return pdf_slides(pdf.read_bytes())
+        except DeckError:
+            return None
 
 
 def slide_texts(archive):
