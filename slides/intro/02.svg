@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#f7f4ee"/>
+  <text x="120" y="180" fill="#1f4d3a" font-family="Segoe UI, sans-serif" font-size="64">Слайды по одному</text>
+  <text x="120" y="340" fill="#1c1915" font-family="Segoe UI, sans-serif" font-size="40">Дальше — следующий слайд.</text>
+  <text x="120" y="420" fill="#1c1915" font-family="Segoe UI, sans-serif" font-size="40">Назад — предыдущий слайд.</text>
+  <text x="120" y="500" fill="#1c1915" font-family="Segoe UI, sans-serif" font-size="40">Исходный файл ученику не отдаётся.</text>
+</svg>

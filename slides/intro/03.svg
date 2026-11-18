@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <rect width="1600" height="900" fill="#f7f4ee"/>
+  <text x="120" y="180" fill="#1f4d3a" font-family="Segoe UI, sans-serif" font-size="64">Дальше — тест</text>
+  <text x="120" y="340" fill="#1c1915" font-family="Segoe UI, sans-serif" font-size="40">На странице курса есть список тестов.</text>
+  <text x="120" y="420" fill="#1c1915" font-family="Segoe UI, sans-serif" font-size="40">Сдавать ответы можно будет следующим шагом.</text>
+</svg>

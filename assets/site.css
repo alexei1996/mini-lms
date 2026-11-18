@@ -1,0 +1,193 @@
+:root {
+  color: #1c1915;
+  background: #f4f1ea;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.45;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+h1 {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  margin: 0.4rem 0 1rem;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 1.4rem 0 0.4rem;
+}
+
+p { margin: 0.4rem 0; }
+
+a { color: #1f4d3a; }
+
+.text-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+}
+
+.back { margin-top: 1.6rem; }
+
+.items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.items li {
+  background: #fff;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.6rem;
+  margin: 0.45rem 0;
+}
+
+.items a,
+.items span {
+  display: block;
+  padding: 0.75rem 0.9rem;
+  text-decoration: none;
+}
+
+.items a:hover { background: #f7faf7; }
+
+.message,
+.empty { color: #5c564c; }
+
+.slide {
+  margin: 0.5rem 0 0.8rem;
+  background: #fff;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.counter {
+  margin: 0;
+  color: #5c564c;
+}
+
+.button {
+  display: inline-block;
+  min-width: 6.5rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.5rem;
+  background: #1f4d3a;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+}
+
+.button.is-disabled {
+  background: #d9d3c7;
+  color: #6d675d;
+}
+
+.catalog a {
+  display: block;
+  background: #fff;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  margin: 0.5rem 0;
+  text-decoration: none;
+}
+
+.stack {
+  display: grid;
+  gap: 0.55rem;
+  max-width: 24rem;
+  margin: 1rem 0;
+}
+
+label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.95rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.5rem;
+  font: inherit;
+}
+
+button.button {
+  border: 0;
+  cursor: pointer;
+}
+
+.button-quiet {
+  background: transparent;
+  color: #1f4d3a;
+  min-width: 0;
+  padding-left: 0;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  margin: 0.8rem 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.file-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.thumbs {
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.thumbs img {
+  height: 4.5rem;
+  width: auto;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.3rem;
+  background: #fff;
+}
