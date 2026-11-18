@@ -4,7 +4,7 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 import pymupdf
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 SLIDE_SIZE = (1280, 720)
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
@@ -71,8 +71,42 @@ def slide_texts(archive):
 def text_slide(text):
     image = Image.new("RGB", SLIDE_SIZE, "#f7f4ee")
     draw = ImageDraw.Draw(image)
+    font = slide_font()
     draw.rectangle((0, 0, SLIDE_SIZE[0], 16), fill="#1f4d3a")
-    draw.text((72, 180), text or " ", fill="#1c1915")
+    y = 80
+    for line in wrap_text(text or " ", font, SLIDE_SIZE[0] - 144):
+        draw.text((72, y), line, fill="#1c1915", font=font)
+        y += 48
+        if y > SLIDE_SIZE[1] - 48:
+            break
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def slide_font():
+    for path in (
+        Path(r"C:\Windows\Fonts\segoeui.ttf"),
+        Path(r"C:\Windows\Fonts\arial.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+    ):
+        if path.exists():
+            return ImageFont.truetype(str(path), 36)
+    return ImageFont.load_default()
+
+
+def wrap_text(text, font, width):
+    words = text.split()
+    if not words:
+        return [""]
+    lines = []
+    current = words[0]
+    for word in words[1:]:
+        trial = current + " " + word
+        if font.getlength(trial) <= width:
+            current = trial
+        else:
+            lines.append(current)
+            current = word
+    lines.append(current)
+    return lines

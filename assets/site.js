@@ -39,7 +39,7 @@
       onCourse(course);
       return;
     }
-    fetch("published/catalog.json")
+    fetch("published/catalog.json?v=" + Date.now(), { cache: "no-store" })
       .then(function (response) {
         if (!response.ok) throw new Error("missing");
         return response.json();
