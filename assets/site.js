@@ -246,7 +246,7 @@
       });
       form.append(block);
     });
-    var submit = el("button", "button", "Отправить");
+    var submit = el("button", "button", "Проверить");
     submit.type = "submit";
     form.append(submit);
     form.addEventListener("submit", function (event) {
@@ -288,7 +288,7 @@
           return;
         }
         root.append(el("p", "message", "Отправлено"));
-        root.append(el("p", "score", result.payload.score + " из " + result.payload.total));
+        root.append(el("p", "score", "Правильных ответов: " + result.payload.score + " из " + result.payload.total));
       }).catch(function () {
         form.remove();
         root.append(el("p", "message", "Отправить ответы с сайта GitHub пока нельзя. Откройте курс на компьютере учителя."));

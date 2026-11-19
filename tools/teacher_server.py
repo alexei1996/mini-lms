@@ -68,7 +68,10 @@ def save_courses(items):
 
 def push_published_files():
     git = ["git", "-C", str(ROOT)]
-    subprocess.run(git + ["add", "-A", "--", "published/catalog.json", "slides/published"], check=False)
+    subprocess.run(
+        git + ["add", "-A", "--", "published/catalog.json", "slides/published", "tests/published"],
+        check=False,
+    )
     staged = subprocess.run(git + ["diff", "--cached", "--quiet"])
     if staged.returncode != 0:
         subprocess.run(
