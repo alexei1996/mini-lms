@@ -72,6 +72,81 @@
         "text": "Перечень рекомендуемой литературы \n\n1.  Advanced Batteries. – Boston, MA : Springer US, 2009.\n2.  Schubert, U. S. An introduction to redox polymers for energy-storage applications / U. S. Schubert, G. R. Newkome, A. Winter. – Weinheim, Germany : Wiley-VCH, 2023. – 537 с.\n3.  Bard, A. J. Electrochemical methods: fundamentals and applications. Electrochemical methods / A. J. Bard, L. R. Faulkner, H. S. White. – Third edition-е изд. – Hoboken, NJ : Wiley, 2022.\n4.  Electropolymerization: Concepts, Materials and Applications. Electropolymerization / ed. by S. Cosnier, A. Karyakin. – 1th ed. – Wiley, 2010.\n5.  Handbook of conducting polymers. Conjugated polymers: processing and applications. Handbook of conducting polymers. Conjugated polymers / ed. T.A.Skotheim, J.R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с.\n6.  Handbook of conducting polymers. Conjugated polymers: theory, synthesis, properties, and characterization. Handbook of conducting polymers. Conjugated polymers / ed. T. A. Skotheim, J. R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с."
       }
     ],
-    "tests": []
+    "tests": [
+      {
+        "id": "t1",
+        "title": "Тест по лекции 1",
+        "allowRetake": true,
+        "questions": [
+          {
+            "id": "q1795067255653",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Выберите правильный вариант ответа."
+              }
+            ],
+            "options": [
+              {
+                "id": "o1",
+                "text": "Неправильный вариант 1",
+                "image": ""
+              },
+              {
+                "id": "o2",
+                "text": "Правильный вариант",
+                "image": ""
+              },
+              {
+                "id": "o17950673094072",
+                "text": "",
+                "image": ""
+              },
+              {
+                "id": "o17950673094073",
+                "text": "Неправильный вариант 2",
+                "image": ""
+              }
+            ]
+          },
+          {
+            "id": "q1795067324702",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какое из предложенных изображений описывает структуру полярона?"
+              }
+            ],
+            "options": [
+              {
+                "id": "o1",
+                "text": "",
+                "image": "tests/published/c2/t1/q1795067324702-o1-2cb10052e2c29785.png"
+              },
+              {
+                "id": "o2",
+                "text": "",
+                "image": "tests/published/c2/t1/q1795067324702-o2-0fa9854b3c189837.png"
+              },
+              {
+                "id": "o17950675155402",
+                "text": "",
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155402-9a5b8baf2cc5a9bc.png"
+              },
+              {
+                "id": "o17950675155413",
+                "text": "",
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155413-7fe79562dc5f9822.png"
+              },
+              {
+                "id": "o17950675155414",
+                "text": "",
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155414-35e216520d7cc7d4.png"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]
