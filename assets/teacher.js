@@ -71,7 +71,9 @@
   var notice = "";
 
   function showCourses() {
-    api("/api/courses").then(function (result) {
+    Promise.all([api("/api/courses"), api("/api/attempts")]).then(function (results) {
+      var result = results[0];
+      var attempts = results[1].ok ? results[1].payload : [];
       if (!result.ok) {
         showLogin();
         return;
@@ -105,13 +107,13 @@
       root.append(form);
 
       result.payload.forEach(function (course) {
-        root.append(courseCard(course));
+        root.append(courseCard(course, attempts));
       });
       root.append(homeLink());
     });
   }
 
-  function courseCard(course) {
+  function courseCard(course, attempts) {
     var card = el("section", "card");
     var titleRow = el("div", "row");
     titleRow.append(el("h2", null, course.title));
@@ -166,21 +168,224 @@
 
     card.append(materialsEditor(course));
 
-    card.append(el("h3", null, "Тесты"));
+    card.append(testsBlock(course, attempts));
+    return card;
+  }
+
+  function testsBlock(course, attempts) {
+    var block = el("section");
+    block.append(el("h3", null, "Тесты"));
+    var createRow = el("div", "row");
+    var title = document.createElement("input");
+    title.placeholder = "Название теста";
+    var create = el("button", "button", "Создать тест");
+    create.type = "button";
+    create.addEventListener("click", function () {
+      api("/api/tests", { courseId: course.id, title: title.value }).then(showCourses);
+    });
+    createRow.append(title, create);
+    block.append(createRow);
     if (!course.tests || course.tests.length === 0) {
-      card.append(el("p", "empty", "Тестов пока нет."));
-    } else {
-      course.tests.forEach(function (test) {
-        var testRow = el("div", "row");
-        testRow.append(el("p", null, test.title));
-        testRow.append(removeButton("Удалить тест «" + test.title + "»?", {
-          courseId: course.id,
-          testId: test.id,
-        }));
-        card.append(testRow);
+      block.append(el("p", "empty", "Тестов пока нет."));
+      return block;
+    }
+    course.tests.forEach(function (test) {
+      block.append(testEditor(course, test, attempts));
+    });
+    return block;
+  }
+
+  function testEditor(course, test, attempts) {
+    var card = el("div", "question");
+    var head = el("div", "row");
+    var title = document.createElement("input");
+    title.value = test.title || "";
+    head.append(title);
+    head.append(removeButton("Удалить тест «" + (test.title || "Тест") + "»?", {
+      courseId: course.id,
+      testId: test.id,
+    }));
+    card.append(head);
+    var retake = document.createElement("input");
+    retake.type = "checkbox";
+    retake.checked = test.allowRetake !== false;
+    var retakeLabel = el("label", "choice", "Можно сдать ещё раз");
+    retakeLabel.prepend(retake);
+    card.append(retakeLabel);
+    var state = test.published ? "Опубликован" : "Черновик";
+    card.append(el("p", null, state));
+    var questions = el("div");
+    (test.questions || []).forEach(function (question, index) {
+      questions.append(questionEditor(question, index));
+    });
+    card.append(questions);
+    var add = el("button", "button button-quiet", "Добавить вопрос");
+    add.type = "button";
+    add.addEventListener("click", function () {
+      questions.append(questionEditor({
+        id: "q" + Date.now(),
+        prompt: [{ type: "text", text: "" }],
+        options: [
+          { id: "o1", text: "", image: "", correct: false },
+          { id: "o2", text: "", image: "", correct: false },
+        ],
+      }, questions.children.length));
+    });
+    var save = el("button", "button", "Сохранить");
+    save.type = "button";
+    var publish = el("button", "button", test.published ? "Снять с публикации" : "Опубликовать");
+    publish.type = "button";
+    function send(published) {
+      api("/api/tests/save", {
+        courseId: course.id,
+        testId: test.id,
+        title: title.value,
+        allowRetake: retake.checked,
+        questions: readQuestions(questions),
+        published: published,
+      }).then(function (result) {
+        notice = result.ok
+          ? "Тест сохранён."
+          : "В каждом вопросе нужно хотя бы два варианта и один верный.";
+        showCourses();
+      });
+    }
+    save.addEventListener("click", function () { send(test.published); });
+    publish.addEventListener("click", function () { send(!test.published); });
+    var actions = el("div", "row");
+    actions.append(add, save, publish);
+    card.append(actions);
+    var mine = (attempts || []).filter(function (attempt) {
+      return attempt.courseId === course.id && attempt.testId === test.id;
+    });
+    if (mine.length) {
+      card.append(el("h3", null, "Сдачи"));
+      mine.forEach(function (attempt) {
+        var line = el("p", null, attempt.submittedAt + " — " + attempt.name + ", " + attempt.email +
+          " — " + attempt.score + " из " + attempt.total + ", попытка " + attempt.attemptNumber);
+        card.append(line);
+        (attempt.snapshot || []).forEach(function (question, index) {
+          var chosen = attempt.answers && attempt.answers[question.id] ? attempt.answers[question.id] : [];
+          var correct = (question.options || []).filter(function (option) { return option.correct; }).map(function (option) {
+            return option.text || option.id;
+          }).join(", ");
+          var picked = (question.options || []).filter(function (option) {
+            return chosen.indexOf(option.id) !== -1;
+          }).map(function (option) { return option.text || option.id; }).join(", ");
+          card.append(el("p", "empty", "Вопрос " + (index + 1) + ". Выбрано: " + (picked || "ничего") + ". Верно: " + correct));
+        });
       });
     }
     return card;
+  }
+
+  function questionEditor(question, index) {
+    var block = el("fieldset", "question");
+    block.dataset.question = question.id;
+    block.append(el("legend", null, "Вопрос " + (index + 1)));
+    var fragments = el("div");
+    (question.prompt || [{ type: "text", text: "" }]).forEach(function (fragment) {
+      fragments.append(fragmentEditor(fragment));
+    });
+    var addFragment = el("button", "button button-quiet", "Добавить фрагмент");
+    addFragment.type = "button";
+    addFragment.addEventListener("click", function () {
+      fragments.append(fragmentEditor({ type: "text", text: "" }));
+    });
+    block.append(fragments, addFragment);
+    var options = el("div");
+    (question.options || []).forEach(function (option) {
+      options.append(optionEditor(option));
+    });
+    var count = document.createElement("input");
+    count.type = "number";
+    count.min = "2";
+    count.value = String(Math.max(2, (question.options || []).length));
+    var applyCount = el("button", "button button-quiet", "Задать число вариантов");
+    applyCount.type = "button";
+    applyCount.addEventListener("click", function () {
+      var wanted = Math.max(2, Number(count.value) || 2);
+      while (options.children.length < wanted) {
+        options.append(optionEditor({ id: "o" + Date.now() + options.children.length, text: "", image: "", correct: false }));
+      }
+      while (options.children.length > wanted) options.removeChild(options.lastElementChild);
+    });
+    var countRow = el("div", "row");
+    countRow.append(count, applyCount);
+    block.append(options, countRow);
+    return block;
+  }
+
+  function fragmentEditor(fragment) {
+    var row = el("div", "row");
+    row.dataset.fragment = "1";
+    var kind = document.createElement("select");
+    [["text", "Текст"], ["bold", "Жирный"], ["italic", "Курсив"], ["list", "Список"], ["formula", "Формула"]].forEach(function (item) {
+      var option = document.createElement("option");
+      option.value = item[0];
+      option.textContent = item[1];
+      if (item[0] === fragment.type) option.selected = true;
+      kind.append(option);
+    });
+    var text = document.createElement("textarea");
+    text.value = fragment.text || "";
+    row.append(kind, text);
+    return row;
+  }
+
+  function optionEditor(option) {
+    var row = el("div", "row");
+    row.dataset.option = option.id;
+    if (option.image) row.dataset.image = option.image;
+    var text = document.createElement("input");
+    text.type = "text";
+    text.value = option.text || "";
+    text.placeholder = "Текст варианта";
+    var correct = document.createElement("input");
+    correct.type = "checkbox";
+    correct.checked = !!option.correct;
+    var correctLabel = el("label", "choice", "Верный");
+    correctLabel.prepend(correct);
+    var file = document.createElement("input");
+    file.type = "file";
+    file.accept = "image/png,image/jpeg";
+    file.addEventListener("change", function () {
+      var image = file.files && file.files[0];
+      if (!image) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        api("/api/test-image", { contentBase64: String(reader.result).split(",")[1] }).then(function (result) {
+          if (result.ok) row.dataset.image = result.payload.id;
+        });
+      };
+      reader.readAsDataURL(image);
+    });
+    row.append(text, correctLabel, file);
+    return row;
+  }
+
+  function readQuestions(container) {
+    var questions = [];
+    container.querySelectorAll("[data-question]").forEach(function (block) {
+      var prompt = [];
+      block.querySelectorAll("[data-fragment]").forEach(function (row) {
+        prompt.push({
+          type: row.querySelector("select").value,
+          text: row.querySelector("textarea").value,
+        });
+      });
+      var options = [];
+      block.querySelectorAll("[data-option]").forEach(function (row) {
+        options.push({
+          id: row.dataset.option,
+          text: row.querySelector("input[type=text]").value,
+          image: row.dataset.image || "",
+          correct: row.querySelector("input[type=checkbox]").checked,
+        });
+      });
+      questions.push({ id: block.dataset.question, prompt: prompt, options: options });
+    });
+    return questions;
   }
 
   function materialsEditor(course) {

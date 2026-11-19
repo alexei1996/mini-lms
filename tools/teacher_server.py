@@ -8,6 +8,7 @@ import secrets
 import shutil
 import subprocess
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -19,12 +20,16 @@ sys.path.insert(0, str(ROOT / "src"))
 import catalog
 import import_deck
 import publish_site
+import scoring
 
 DATA = ROOT / "data"
 LOGIN_FILE = DATA / "teacher-login.json"
 COURSES_FILE = DATA / "teacher-courses.json"
 SLIDE_DIR = DATA / "slide-images"
+TEST_IMAGE_DIR = DATA / "test-images"
+ATTEMPTS_FILE = DATA / "attempts.json"
 SLIDE_URL = re.compile(r"^/api/slide/([^/]+)/([^/]+)/(\d+)\.png$")
+TEST_IMAGE_URL = re.compile(r"^/api/test-image/([a-f0-9]{16}\.(?:png|jpg))$")
 SESSIONS = set()
 
 
@@ -134,6 +139,16 @@ class Handler(SimpleHTTPRequestHandler):
         if slide:
             self.serve_slide(slide.group(1), slide.group(2), int(slide.group(3)))
             return
+        if parsed.path == "/api/attempts":
+            if not self.signed_in():
+                self.respond({"error": "auth"}, 401)
+                return
+            self.respond(load_json(ATTEMPTS_FILE, []))
+            return
+        image = TEST_IMAGE_URL.match(parsed.path)
+        if image:
+            self.serve_test_image(image.group(1))
+            return
         if parsed.path == "/api/courses":
             if not self.signed_in():
                 self.respond({"error": "auth"}, 401)
@@ -157,12 +172,18 @@ class Handler(SimpleHTTPRequestHandler):
             SESSIONS.discard(self.cookie())
             self.respond({"signedIn": False}, clear_cookie=True)
             return
+        if path == "/api/attempt":
+            self.submit_attempt(body)
+            return
         if not self.signed_in():
             self.respond({"error": "auth"}, 401)
             return
         items = courses()
         if path == "/api/upload":
             self.upload(body, items)
+            return
+        if path == "/api/test-image":
+            self.save_test_image(body)
             return
         if path == "/api/courses":
             try:
@@ -196,6 +217,27 @@ class Handler(SimpleHTTPRequestHandler):
                 )
             except KeyError:
                 self.respond({"error": "missing"}, 404)
+                return
+        elif path == "/api/tests":
+            test = catalog.add_test(course, body.get("title", ""))
+            save_courses(items)
+            self.respond(test)
+            return
+        elif path == "/api/tests/save":
+            try:
+                test = catalog.save_test(
+                    course,
+                    body.get("testId", ""),
+                    body.get("title", ""),
+                    body.get("allowRetake", True),
+                    body.get("questions") or [],
+                    body.get("published"),
+                )
+            except KeyError:
+                self.respond({"error": "missing"}, 404)
+                return
+            except ValueError:
+                self.respond({"error": "incomplete"}, 400)
                 return
         elif path == "/api/delete":
             self.delete(body, items, course)
@@ -251,6 +293,81 @@ class Handler(SimpleHTTPRequestHandler):
         presentation["slides"] = urls
         save_courses(items)
         self.respond(presentation)
+
+    def save_test_image(self, body):
+        try:
+            raw = base64.b64decode(body.get("contentBase64") or "")
+        except (ValueError, binascii.Error):
+            self.respond({"error": "type"}, 400)
+            return
+        if raw.startswith(b"\x89PNG"):
+            extension = "png"
+        elif raw.startswith(b"\xff\xd8"):
+            extension = "jpg"
+        else:
+            self.respond({"error": "type"}, 400)
+            return
+        image_id = "%s.%s" % (secrets.token_hex(8), extension)
+        TEST_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+        (TEST_IMAGE_DIR / image_id).write_bytes(raw)
+        self.respond({"id": image_id})
+
+    def serve_test_image(self, image_id):
+        if not self.signed_in():
+            self.send_error(404)
+            return
+        path = TEST_IMAGE_DIR / image_id
+        if not path.is_file():
+            self.send_error(404)
+            return
+        payload = path.read_bytes()
+        kind = "image/jpeg" if image_id.endswith(".jpg") else "image/png"
+        self.send_response(200)
+        self.send_header("Content-Type", kind)
+        self.send_header("Content-Length", str(len(payload)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def submit_attempt(self, body):
+        items = courses()
+        course = self.find(body.get("courseId", ""), items)
+        if course is None:
+            self.respond({"error": "missing"}, 404)
+            return
+        try:
+            test = catalog.find_test(course, body.get("testId", ""))
+        except KeyError:
+            self.respond({"error": "missing"}, 404)
+            return
+        if not test.get("published"):
+            self.respond({"error": "missing"}, 404)
+            return
+        prior = load_json(ATTEMPTS_FILE, [])
+        try:
+            attempt = scoring.prepare_attempt(
+                test,
+                course["id"],
+                course["title"],
+                body.get("name", ""),
+                body.get("email", ""),
+                body.get("answers") or {},
+                prior,
+                datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            )
+        except scoring.AttemptError as error:
+            status = 409 if error.code == "retake" else 400
+            self.respond({"error": error.code}, status)
+            return
+        attempt["id"] = secrets.token_hex(8)
+        prior.append(attempt)
+        save_json(ATTEMPTS_FILE, prior)
+        self.respond({
+            "status": "sent",
+            "score": attempt["score"],
+            "total": attempt["total"],
+            "attemptNumber": attempt["attemptNumber"],
+        })
 
     def serve_slide(self, course_id, presentation_id, index):
         course = self.find(course_id)

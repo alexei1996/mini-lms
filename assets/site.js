@@ -95,7 +95,11 @@
 
     root.append(el("h2", null, "Тесты"));
     root.append(itemList(course.tests, function (test) {
-      return el("span", null, test.title);
+      return linkTo(
+        "test.html?course=" + encodeURIComponent(course.id) +
+          "&test=" + encodeURIComponent(test.id),
+        test.title
+      );
     }, "Тестов пока нет."));
 
     root.append(linkTo("index.html", "Ко всем курсам", "text-link back"));
@@ -163,8 +167,145 @@
     return linkTo(href, label, "button");
   }
 
+  function renderPrompt(parent, fragments) {
+    (fragments || []).forEach(function (fragment) {
+      if (fragment.type === "formula") {
+        var formula = el("span", "formula");
+        if (window.katex) {
+          window.katex.render(fragment.text || "", formula, { throwOnError: false });
+        } else {
+          formula.textContent = fragment.text || "";
+        }
+        parent.append(formula);
+        return;
+      }
+      if (fragment.type === "list") {
+        var list = el("ul");
+        String(fragment.text || "").split("\n").forEach(function (line) {
+          if (!line.trim()) return;
+          list.append(el("li", null, line));
+        });
+        parent.append(list);
+        return;
+      }
+      var tag = fragment.type === "bold" ? "strong" : fragment.type === "italic" ? "em" : "p";
+      parent.append(el(tag, null, fragment.text || ""));
+    });
+  }
+
+  function renderTest(root) {
+    loadCourse(params.get("course"), function (course) {
+      var test = (course.tests || []).find(function (item) {
+        return item.id === params.get("test");
+      });
+      if (!test) {
+        showMissing(root, "Такого теста нет.");
+        return;
+      }
+      paintTest(root, course, test);
+    });
+  }
+
+  function paintTest(root, course, test) {
+    document.title = test.title;
+    root.append(linkTo("course.html?course=" + encodeURIComponent(course.id), course.title, "text-link"));
+    root.append(el("h1", null, test.title));
+    if (test.allowRetake === false) {
+      root.append(el("p", "message", "Этот тест можно сдать один раз."));
+    }
+    var form = el("form", "stack test-form");
+    var name = document.createElement("input");
+    name.required = true;
+    name.placeholder = "Имя";
+    var email = document.createElement("input");
+    email.required = true;
+    email.type = "email";
+    email.placeholder = "Почта";
+    form.append(fieldLabel("Имя", name), fieldLabel("Почта", email));
+    (test.questions || []).forEach(function (question, index) {
+      var block = el("fieldset", "question");
+      var legend = el("legend", null, "Вопрос " + (index + 1));
+      block.append(legend);
+      renderPrompt(block, question.prompt);
+      (question.options || []).forEach(function (option) {
+        var choice = el("label", "choice");
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.name = question.id;
+        box.value = option.id;
+        choice.append(box);
+        var text = el("span", null, option.text || "");
+        choice.append(text);
+        if (option.image) {
+          var image = document.createElement("img");
+          image.src = option.image;
+          image.alt = "";
+          choice.append(image);
+        }
+        block.append(choice);
+      });
+      form.append(block);
+    });
+    var submit = el("button", "button", "Отправить");
+    submit.type = "submit";
+    form.append(submit);
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var answers = {};
+      (test.questions || []).forEach(function (question) {
+        answers[question.id] = [];
+      });
+      form.querySelectorAll("input[type=checkbox]:checked").forEach(function (box) {
+        if (!answers[box.name]) answers[box.name] = [];
+        answers[box.name].push(box.value);
+      });
+      fetch("/api/attempt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: course.id,
+          testId: test.id,
+          name: name.value,
+          email: email.value,
+          answers: answers,
+        }),
+      }).then(function (response) {
+        return response.json().then(function (payload) {
+          return { ok: response.ok, payload: payload };
+        });
+      }).then(function (result) {
+        if (!result.ok && result.payload.error === "identity") {
+          root.insertBefore(el("p", "message", "Впишите имя и почту."), form);
+          return;
+        }
+        form.remove();
+        if (!result.ok && result.payload.error === "retake") {
+          root.append(el("p", "message", "Повторная сдача этого теста закрыта."));
+          return;
+        }
+        if (!result.ok) {
+          root.append(el("p", "message", "Отправить ответы с сайта GitHub пока нельзя. Откройте курс на компьютере учителя."));
+          return;
+        }
+        root.append(el("p", "message", "Отправлено"));
+        root.append(el("p", "score", result.payload.score + " из " + result.payload.total));
+      }).catch(function () {
+        form.remove();
+        root.append(el("p", "message", "Отправить ответы с сайта GitHub пока нельзя. Откройте курс на компьютере учителя."));
+      });
+    });
+    root.append(form);
+  }
+
+  function fieldLabel(text, input) {
+    var label = el("label", null, text);
+    label.append(input);
+    return label;
+  }
+
   var root = document.getElementById("app");
   var page = document.body.dataset.page;
   if (page === "course") renderCourse(root);
   if (page === "slides") renderSlides(root);
+  if (page === "test") renderTest(root);
 })();

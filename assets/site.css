@@ -215,3 +215,27 @@ textarea {
   border-radius: 0.6rem;
   padding: 0.9rem 1rem;
 }
+
+.question {
+  border-top: 1px solid #ddd6c8;
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+}
+
+.choice {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 0.35rem 0;
+}
+
+.choice input { width: auto; }
+
+.score {
+  font-size: 1.4rem;
+  margin: 0.4rem 0;
+}
+
+select, textarea { font: inherit; }
+
+.test-form { max-width: none; }

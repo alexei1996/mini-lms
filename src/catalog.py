@@ -1,3 +1,5 @@
+import scoring
+
 PREPARED_TITLE = "Подготовленная презентация"
 PREPARED_SLIDES = [
     "slides/intro/01.svg",
@@ -92,6 +94,95 @@ def delete_presentation(course, presentation_id):
     course["presentations"] = kept
 
 
+def add_test(course, title):
+    tests = course.setdefault("tests", [])
+    taken = {item["id"] for item in tests}
+    number = 1
+    while "t%d" % number in taken:
+        number += 1
+    cleaned = " ".join((title or "").split()) or "Тест"
+    test = {
+        "id": "t%d" % number,
+        "title": cleaned,
+        "published": False,
+        "allowRetake": True,
+        "questions": [],
+    }
+    tests.append(test)
+    return test
+
+
+def save_test(course, test_id, title, allow_retake, questions, published):
+    test = find_test(course, test_id)
+    updated_questions = normalize_questions(questions)
+    if published and not scoring.ready_to_publish({"questions": updated_questions}):
+        raise ValueError("incomplete")
+    test["title"] = " ".join((title or "").split()) or "Тест"
+    test["allowRetake"] = bool(allow_retake)
+    test["questions"] = updated_questions
+    test["published"] = bool(published)
+    return test
+
+
+def find_test(course, test_id):
+    for test in course.get("tests") or []:
+        if test["id"] == test_id:
+            return test
+    raise KeyError(test_id)
+
+
+def normalize_questions(raw):
+    questions = []
+    seen = set()
+    for index, item in enumerate(raw or [], start=1):
+        if not isinstance(item, dict):
+            continue
+        question_id = str(item.get("id") or ("q%d" % index))
+        while question_id in seen:
+            question_id += "x"
+        seen.add(question_id)
+        questions.append({
+            "id": question_id,
+            "prompt": normalize_prompt(item.get("prompt")),
+            "options": normalize_options(item.get("options")),
+        })
+    return questions
+
+
+def normalize_prompt(raw):
+    fragments = []
+    for item in raw or []:
+        if not isinstance(item, dict):
+            continue
+        kind = item.get("type") or "text"
+        if kind not in ("text", "bold", "italic", "list", "formula"):
+            kind = "text"
+        fragments.append({"type": kind, "text": str(item.get("text") or "")})
+    return fragments
+
+
+def normalize_options(raw):
+    options = []
+    seen = set()
+    for index, item in enumerate(raw or [], start=1):
+        if not isinstance(item, dict):
+            continue
+        option_id = str(item.get("id") or ("o%d" % index))
+        while option_id in seen:
+            option_id += "x"
+        seen.add(option_id)
+        image = str(item.get("image") or "")
+        if "/" in image or "\\" in image:
+            image = ""
+        options.append({
+            "id": option_id,
+            "text": str(item.get("text") or ""),
+            "image": image,
+            "correct": bool(item.get("correct")),
+        })
+    return options
+
+
 def delete_test(course, test_id):
     kept = [item for item in course.get("tests", []) if item["id"] != test_id]
     if len(kept) == len(course.get("tests", [])):
@@ -122,7 +213,7 @@ def public_course(course):
         "title": course["title"],
         "presentations": presentations,
         "sections": public_sections(course),
-        "tests": [],
+        "tests": scoring.student_tests(course),
     }
 
 

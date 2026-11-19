@@ -2,6 +2,8 @@ import json
 import shutil
 from pathlib import Path
 
+import scoring
+
 
 def published_catalog(courses):
     catalog = []
@@ -20,7 +22,7 @@ def published_catalog(courses):
             "title": course["title"],
             "presentations": presentations,
             "sections": public_sections(course),
-            "tests": [],
+            "tests": scoring.student_tests(course),
         })
     return catalog
 
@@ -71,7 +73,31 @@ def sync_published(root, courses):
                 if origin.is_file():
                     shutil.copyfile(origin, target)
                 number += 1
+    copy_test_images(root, courses)
     catalog_path = root / "published" / "catalog.json"
     catalog_path.parent.mkdir(parents=True, exist_ok=True)
     catalog_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8")
     return catalog
+
+
+def copy_test_images(root, courses):
+    folder = root / "tests" / "published"
+    if folder.exists():
+        shutil.rmtree(folder)
+    folder.mkdir(parents=True)
+    for course in courses:
+        for test in course.get("tests") or []:
+            if not test.get("published"):
+                continue
+            for question in test.get("questions") or []:
+                for option in question.get("options") or []:
+                    image = option.get("image") or ""
+                    if not image:
+                        continue
+                    origin = root / "data" / "test-images" / image
+                    target = root / scoring.option_image_path(
+                        course["id"], test["id"], question["id"], option
+                    )
+                    if origin.is_file():
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(origin, target)
