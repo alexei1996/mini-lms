@@ -72,6 +72,35 @@
         "text": "Перечень рекомендуемой литературы \n\n1.  Advanced Batteries. – Boston, MA : Springer US, 2009.\n2.  Schubert, U. S. An introduction to redox polymers for energy-storage applications / U. S. Schubert, G. R. Newkome, A. Winter. – Weinheim, Germany : Wiley-VCH, 2023. – 537 с.\n3.  Bard, A. J. Electrochemical methods: fundamentals and applications. Electrochemical methods / A. J. Bard, L. R. Faulkner, H. S. White. – Third edition-е изд. – Hoboken, NJ : Wiley, 2022.\n4.  Electropolymerization: Concepts, Materials and Applications. Electropolymerization / ed. by S. Cosnier, A. Karyakin. – 1th ed. – Wiley, 2010.\n5.  Handbook of conducting polymers. Conjugated polymers: processing and applications. Handbook of conducting polymers. Conjugated polymers / ed. T.A.Skotheim, J.R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с.\n6.  Handbook of conducting polymers. Conjugated polymers: theory, synthesis, properties, and characterization. Handbook of conducting polymers. Conjugated polymers / ed. T. A. Skotheim, J. R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с."
       }
     ],
-    "tests": []
+    "tests": [
+      {
+        "id": "t1",
+        "title": "Короткий тест",
+        "allowRetake": true,
+        "questions": [
+          {
+            "id": "q1795066547935",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Сколько протонов у водорода?"
+              }
+            ],
+            "options": [
+              {
+                "id": "o1",
+                "text": "Один",
+                "image": ""
+              },
+              {
+                "id": "o2",
+                "text": "Два",
+                "image": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]
