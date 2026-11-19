@@ -46,6 +46,17 @@ class CatalogTest(unittest.TestCase):
         catalog.set_section(course, "method", "Для ученика", True)
         visible = catalog.public_course(course)["sections"]
         self.assertEqual(visible[0]["text"], "Для ученика")
+        catalog.set_section(
+            course,
+            "method",
+            '<p style="text-align: center"><strong>Глава</strong> <a href="https://example.com">ссылка</a></p><script>bad</script>',
+            True,
+        )
+        cleaned = catalog.public_course(course)["sections"][0]["text"]
+        self.assertIn("<strong>Глава</strong>", cleaned)
+        self.assertIn('href="https://example.com"', cleaned)
+        self.assertIn("text-align: center", cleaned)
+        self.assertNotIn("script", cleaned)
         self.assertNotIn("published", visible[0])
 
     def test_delete_removes_course_presentation_and_test(self):

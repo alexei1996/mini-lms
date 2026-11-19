@@ -69,12 +69,15 @@ class ScoringTest(unittest.TestCase):
             scoring.prepare_attempt(test, "c1", "Курс", "Анна Иванова", "a@example.com", {"q1": ["a"]}, [first, second], "t3")
         self.assertEqual(caught.exception.code, "retake")
 
-    def test_blank_name_or_email_is_rejected(self):
+    def test_blank_name_is_rejected_and_email_is_optional(self):
         test = {"id": "t1", "allowRetake": True, "questions": [question({"a"})]}
         with self.assertRaises(scoring.AttemptError):
-            scoring.prepare_attempt(test, "c1", "Курс", "   ", "a@example.com", {}, [], "t")
-        with self.assertRaises(scoring.AttemptError):
-            scoring.prepare_attempt(test, "c1", "Курс", "Анна", "  ", {}, [], "t")
+            scoring.prepare_attempt(test, "c1", "Курс", "   ", "", {}, [], "t")
+        first = scoring.prepare_attempt(test, "c1", "Курс", "Анна", "", {"q1": ["a"]}, [], "t")
+        self.assertEqual(first["email"], "")
+        self.assertEqual(first["attemptNumber"], 1)
+        second = scoring.prepare_attempt(test, "c1", "Курс", "Анна", "", {"q1": []}, [first], "t2")
+        self.assertEqual(second["attemptNumber"], 2)
 
     def test_saved_snapshot_keeps_the_submitted_wording(self):
         test = {"id": "t1", "title": "Проверка", "allowRetake": True, "questions": [question({"a"})]}

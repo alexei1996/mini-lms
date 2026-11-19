@@ -89,7 +89,7 @@
       root.append(el("p", "empty", "Материалов пока нет."));
     } else {
       materials.forEach(function (section) {
-        root.append(el("p", "reading", section.text));
+        root.append(reading(section.text));
       });
     }
 
@@ -217,13 +217,10 @@
     var name = document.createElement("input");
     name.required = true;
     name.placeholder = "Имя";
-    var email = document.createElement("input");
-    email.required = true;
-    email.type = "email";
-    email.placeholder = "Почта";
-    form.append(fieldLabel("Имя", name), fieldLabel("Почта", email));
+    form.append(fieldLabel("Имя", name));
     (test.questions || []).forEach(function (question, index) {
       var block = el("fieldset", "question");
+      block.dataset.question = question.id;
       var legend = el("legend", null, "Вопрос " + (index + 1));
       block.append(legend);
       renderPrompt(block, question.prompt);
@@ -236,10 +233,6 @@
         choice.append(box);
         var text = el("span", null, option.text || "");
         choice.append(text);
-        if (option.correct) {
-          choice.classList.add("is-correct");
-          choice.append(el("span", "key-mark", "Верный"));
-        }
         if (option.image) {
           var image = document.createElement("img");
           image.src = option.image;
@@ -271,7 +264,6 @@
           courseId: course.id,
           testId: test.id,
           name: name.value,
-          email: email.value,
           answers: answers,
         }),
       }).then(function (response) {
@@ -280,7 +272,7 @@
         });
       }).then(function (result) {
         if (!result.ok && result.payload.error === "identity") {
-          root.insertBefore(el("p", "message", "Впишите имя и почту."), form);
+          root.insertBefore(el("p", "message", "Впишите имя."), form);
           return;
         }
         if (!result.ok && result.payload.error === "retake") {
@@ -289,11 +281,14 @@
         }
         if (!result.ok) {
           showScore(root, local);
+          markQuestions(form, local);
           return;
         }
         showScore(root, result.payload);
+        markQuestions(form, local);
       }).catch(function () {
         showScore(root, local);
+        markQuestions(form, local);
       });
     });
     root.append(form);
@@ -301,6 +296,7 @@
 
   function grade(test, answers) {
     var score = 0;
+    var questions = [];
     (test.questions || []).forEach(function (question) {
       var correct = [];
       (question.options || []).forEach(function (option) {
@@ -312,8 +308,26 @@
         if (correct.indexOf(id) < 0) same = false;
       });
       if (same) score += 1;
+      questions.push({ id: question.id, ok: same });
     });
-    return { score: score, total: (test.questions || []).length };
+    return { score: score, total: (test.questions || []).length, questions: questions };
+  }
+
+  function markQuestions(form, result) {
+    (result.questions || []).forEach(function (item) {
+      var block = null;
+      form.querySelectorAll("[data-question]").forEach(function (node) {
+        if (node.dataset.question === item.id) block = node;
+      });
+      if (!block) return;
+      var note = block.querySelector(".question-result");
+      if (!note) {
+        note = el("p", "question-result", "");
+        block.append(note);
+      }
+      note.textContent = item.ok ? "Верно" : "Неверно";
+      note.className = item.ok ? "question-result is-right" : "question-result is-wrong";
+    });
   }
 
   function showScore(root, result) {
@@ -322,6 +336,17 @@
     var score = el("p", "score score-line", "Правильных ответов: " + result.score + " из " + result.total);
     root.insertBefore(score, root.querySelector(".test-form"));
     root.insertBefore(sent, score);
+  }
+
+  function reading(text) {
+    var box = el("div", "reading");
+    if (!window.LMS_RICH || !window.LMS_RICH.looksRich(text)) {
+      box.classList.add("reading-plain");
+      box.textContent = text || "";
+      return box;
+    }
+    window.LMS_RICH.append(box, text);
+    return box;
   }
 
   function fieldLabel(text, input) {

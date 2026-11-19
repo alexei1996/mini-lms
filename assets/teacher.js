@@ -69,6 +69,7 @@
   }
 
   var notice = "";
+  var opened = {};
 
   function showCourses() {
     Promise.all([api("/api/courses"), api("/api/attempts")]).then(function (results) {
@@ -114,67 +115,78 @@
   }
 
   function courseCard(course, attempts) {
-    var card = el("section", "card");
-    var titleRow = el("div", "row");
-    titleRow.append(el("h2", null, course.title));
-    titleRow.append(removeButton("Удалить курс «" + course.title + "»?", {
+    var tools = el("div", "row");
+    tools.append(removeButton("Удалить курс «" + course.title + "»?", {
       courseId: course.id,
     }));
-    card.append(titleRow);
     var link = el("a", "text-link", "Ссылка для ученика");
     link.href = "course.html?course=" + encodeURIComponent(course.id);
-    card.append(link);
-
-    card.append(uploadControl(course));
+    tools.append(link);
+    var presentations = [uploadControl(course)];
     if (course.presentations.length === 0) {
       var add = el("button", "button", "Добавить подготовленную презентацию");
       add.type = "button";
       add.addEventListener("click", function () {
         api("/api/presentations", { courseId: course.id }).then(showCourses);
       });
-      card.append(add);
+      presentations.push(add);
     }
-
     course.presentations.forEach(function (presentation) {
-      var row = el("div", "row");
-      var state = presentation.published ? "Опубликована" : "Черновик";
-      row.append(el("p", null, presentation.title + " — " + state));
-      var toggle = el("button", "button", presentation.published ? "Снять с публикации" : "Опубликовать");
-      toggle.type = "button";
-      toggle.addEventListener("click", function () {
-        api("/api/publish", {
-          courseId: course.id,
-          presentationId: presentation.id,
-          published: !presentation.published,
-        }).then(showCourses);
-      });
-      row.append(toggle);
-      row.append(removeButton("Удалить презентацию «" + presentation.title + "»?", {
+      presentations.push(presentationRow(course, presentation));
+    });
+    return fold("course-" + course.id, course.title, [
+      tools,
+      fold("presentations-" + course.id, "Презентации", presentations),
+      fold("materials-" + course.id, "Методические материалы", [materialsEditor(course)]),
+      fold("tests-" + course.id, "Тесты", [testsBlock(course, attempts)]),
+    ]);
+  }
+
+  function fold(id, title, nodes) {
+    var box = document.createElement("details");
+    box.className = "fold";
+    if (opened[id]) box.open = true;
+    var summary = document.createElement("summary");
+    summary.textContent = title;
+    box.append(summary);
+    nodes.forEach(function (node) { box.append(node); });
+    box.addEventListener("toggle", function () { opened[id] = box.open; });
+    return box;
+  }
+
+  function presentationRow(course, presentation) {
+    var row = el("div", "row");
+    var state = presentation.published ? "Опубликована" : "Черновик";
+    row.append(el("p", null, presentation.title + " — " + state));
+    var toggle = el("button", "button", presentation.published ? "Снять с публикации" : "Опубликовать");
+    toggle.type = "button";
+    toggle.addEventListener("click", function () {
+      api("/api/publish", {
         courseId: course.id,
         presentationId: presentation.id,
-      }));
-      if (presentation.slides && presentation.slides.length) {
-        var thumbs = el("div", "thumbs");
-        presentation.slides.forEach(function (src, index) {
-          var image = document.createElement("img");
-          image.src = src;
-          image.alt = "Слайд " + (index + 1);
-          thumbs.append(image);
-        });
-        row.append(thumbs);
-      }
-      card.append(row);
+        published: !presentation.published,
+      }).then(showCourses);
     });
-
-    card.append(materialsEditor(course));
-
-    card.append(testsBlock(course, attempts));
-    return card;
+    row.append(toggle);
+    row.append(removeButton("Удалить презентацию «" + presentation.title + "»?", {
+      courseId: course.id,
+      presentationId: presentation.id,
+    }));
+    if (presentation.slides && presentation.slides.length) {
+      var thumbs = el("div", "thumbs");
+      presentation.slides.forEach(function (src, index) {
+        var image = document.createElement("img");
+        image.src = src;
+        image.alt = "Слайд " + (index + 1);
+        thumbs.append(image);
+      });
+      row.append(thumbs);
+    }
+    return row;
   }
 
   function testsBlock(course, attempts) {
-    var block = el("section");
-    block.append(el("h3", null, "Тесты"));
+    var block = el("div");
     var createRow = el("div", "row");
     var title = document.createElement("input");
     title.placeholder = "Название теста";
@@ -190,7 +202,11 @@
       return block;
     }
     course.tests.forEach(function (test) {
-      block.append(testEditor(course, test, attempts));
+      block.append(fold(
+        "test-" + course.id + "-" + test.id,
+        test.title || "Тест",
+        [testEditor(course, test, attempts)]
+      ));
     });
     return block;
   }
@@ -216,20 +232,23 @@
     card.append(el("p", null, state));
     var questions = el("div");
     (test.questions || []).forEach(function (question, index) {
-      questions.append(questionEditor(question, index));
+      questions.append(questionFold(question, index));
     });
     card.append(questions);
     var add = el("button", "button button-quiet", "Добавить вопрос");
     add.type = "button";
     add.addEventListener("click", function () {
-      questions.append(questionEditor({
+      var added = {
         id: "q" + Date.now(),
         prompt: [{ type: "text", text: "" }],
         options: [
           { id: "o1", text: "", image: "", correct: false },
           { id: "o2", text: "", image: "", correct: false },
         ],
-      }, questions.children.length));
+      };
+      var folded = questionFold(added, questions.children.length);
+      folded.open = true;
+      questions.append(folded);
     });
     var save = el("button", "button", "Сохранить");
     save.type = "button";
@@ -259,11 +278,12 @@
       return attempt.courseId === course.id && attempt.testId === test.id;
     });
     if (mine.length) {
-      card.append(el("h3", null, "Сдачи"));
+      var lines = [];
       mine.forEach(function (attempt) {
-        var line = el("p", null, attempt.submittedAt + " — " + attempt.name + ", " + attempt.email +
+        var who = attempt.email ? attempt.name + ", " + attempt.email : attempt.name;
+        var line = el("p", null, attempt.submittedAt + " — " + who +
           " — " + attempt.score + " из " + attempt.total + ", попытка " + attempt.attemptNumber);
-        card.append(line);
+        lines.push(line);
         (attempt.snapshot || []).forEach(function (question, index) {
           var chosen = attempt.answers && attempt.answers[question.id] ? attempt.answers[question.id] : [];
           var correct = (question.options || []).filter(function (option) { return option.correct; }).map(function (option) {
@@ -272,11 +292,16 @@
           var picked = (question.options || []).filter(function (option) {
             return chosen.indexOf(option.id) !== -1;
           }).map(function (option) { return option.text || option.id; }).join(", ");
-          card.append(el("p", "empty", "Вопрос " + (index + 1) + ". Выбрано: " + (picked || "ничего") + ". Верно: " + correct));
+          lines.push(el("p", "empty", "Вопрос " + (index + 1) + ". Выбрано: " + (picked || "ничего") + ". Верно: " + correct));
         });
       });
+      card.append(fold("attempts-" + course.id + "-" + test.id, "Сдачи", lines));
     }
     return card;
+  }
+
+  function questionFold(question, index) {
+    return fold("question-" + question.id, "Вопрос " + (index + 1), [questionEditor(question, index)]);
   }
 
   function questionEditor(question, index) {
@@ -411,26 +436,73 @@
     var section = (course.sections || []).filter(function (item) {
       return item.id === "method";
     })[0] || { id: "method", text: "", published: false };
-    var block = el("section", null);
-    block.append(el("h3", null, "Методические материалы"));
+    var block = el("div");
     var state = section.published ? "Опубликованы" : "Черновик";
     block.append(el("p", null, state));
-    var area = document.createElement("textarea");
-    area.value = section.text || "";
+    var editor = richEditor(section.text || "");
     var row = el("div", "row");
     var save = el("button", "button", "Сохранить");
     save.type = "button";
     save.addEventListener("click", function () {
-      sendSection(course.id, section.id, area.value, section.published);
+      sendSection(course.id, section.id, editor.value(), section.published);
     });
     var toggle = el("button", "button", section.published ? "Снять с публикации" : "Опубликовать");
     toggle.type = "button";
     toggle.addEventListener("click", function () {
-      sendSection(course.id, section.id, area.value, !section.published);
+      sendSection(course.id, section.id, editor.value(), !section.published);
     });
     row.append(save, toggle);
-    block.append(area, row);
+    block.append(editor.bar, editor.area, row);
     return block;
+  }
+
+  function richEditor(text) {
+    var bar = el("div", "rich-bar");
+    var area = el("div", "rich-text");
+    area.contentEditable = "true";
+    area.setAttribute("role", "textbox");
+    if (window.LMS_RICH && window.LMS_RICH.looksRich(text)) {
+      window.LMS_RICH.append(area, text);
+    } else {
+      area.classList.add("rich-plain");
+      area.textContent = text || "";
+    }
+    function command(label, name, value) {
+      var button = el("button", "button button-quiet", label);
+      button.type = "button";
+      button.addEventListener("mousedown", function (event) { event.preventDefault(); });
+      button.addEventListener("click", function () {
+        area.classList.remove("rich-plain");
+        area.focus();
+        document.execCommand(name, false, value || null);
+      });
+      bar.append(button);
+    }
+    command("Жирный", "bold");
+    command("Курсив", "italic");
+    command("Слева", "justifyLeft");
+    command("По центру", "justifyCenter");
+    command("Справа", "justifyRight");
+    command("Абзац", "insertParagraph");
+    var link = el("button", "button button-quiet", "Ссылка");
+    link.type = "button";
+    link.addEventListener("mousedown", function (event) { event.preventDefault(); });
+    link.addEventListener("click", function () {
+      var url = window.prompt("Адрес ссылки", "https://");
+      if (!url || !/^(https?:|mailto:)/i.test(url)) return;
+      area.classList.remove("rich-plain");
+      area.focus();
+      document.execCommand("createLink", false, url);
+    });
+    bar.append(link);
+    return {
+      bar: bar,
+      area: area,
+      value: function () {
+        if (!area.querySelector("p, div, br, strong, em, b, i, a")) return area.innerText;
+        return area.innerHTML;
+      },
+    };
   }
 
   function sendSection(courseId, sectionId, text, published) {

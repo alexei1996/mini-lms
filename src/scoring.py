@@ -96,7 +96,7 @@ def chosen_ids(answers, question_id):
 def prepare_attempt(test, course_id, course_title, name, email, answers, prior, submitted_at):
     name_key = " ".join((name or "").split())
     email_key = (email or "").strip().lower()
-    if not name_key or not email_key:
+    if not name_key:
         raise AttemptError("identity")
     same = [
         item for item in prior

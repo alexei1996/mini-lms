@@ -2,6 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
+import catalog
 import scoring
 
 
@@ -35,7 +36,7 @@ def public_sections(course):
         visible.append({
             "id": section["id"],
             "title": section["title"],
-            "text": section.get("text") or "",
+            "text": catalog.clean_section_html(section.get("text") or ""),
         })
     return visible
 

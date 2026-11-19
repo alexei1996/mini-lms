@@ -1,4 +1,12 @@
+import re
+from html.parser import HTMLParser
+
 import scoring
+
+_RICH_TAG = re.compile(r"<(?:p|div|br|strong|em|b|i|a)\b", re.I)
+_ALIGN = re.compile(r"text-align\s*:\s*(left|center|right|justify)", re.I)
+_SAFE_URL = re.compile(r"^(https?:|mailto:)", re.I)
+_ALLOWED = {"p", "div", "br", "strong", "em", "a"}
 
 PREPARED_TITLE = "Подготовленная презентация"
 PREPARED_SLIDES = [
@@ -74,10 +82,103 @@ def ensure_sections(course):
 def set_section(course, section_id, text, published):
     for section in ensure_sections(course):
         if section["id"] == section_id:
-            section["text"] = "" if text is None else str(text)
+            section["text"] = clean_section_html("" if text is None else str(text))
             section["published"] = bool(published)
             return section
     raise KeyError(section_id)
+
+
+def clean_section_html(text):
+    raw = "" if text is None else str(text)
+    if not _RICH_TAG.search(raw):
+        return raw
+    parser = _SectionCleaner()
+    parser.feed(raw)
+    parser.close()
+    while parser.stack:
+        parser.parts.append("</%s>" % parser.stack.pop())
+    return "".join(parser.parts)
+
+
+class _SectionCleaner(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.stack = []
+        self.skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        self._open(tag, attrs)
+
+    def handle_startendtag(self, tag, attrs):
+        self._open(tag, attrs, empty=True)
+
+    def _open(self, tag, attrs, empty=False):
+        tag = _plain_tag(tag)
+        if self.skip:
+            if not empty:
+                self.skip += 1
+            return
+        if tag not in _ALLOWED:
+            if not empty:
+                self.skip += 1
+            return
+        if tag == "br":
+            self.parts.append("<br>")
+            return
+        attr = ""
+        if tag == "a":
+            href = _attr(attrs, "href")
+            if not _SAFE_URL.match(href):
+                if not empty:
+                    self.skip += 1
+                return
+            attr = ' href="%s"' % _escape(href)
+        elif tag in ("p", "div"):
+            found = _ALIGN.search(_attr(attrs, "style"))
+            if found:
+                attr = ' style="text-align: %s"' % found.group(1).lower()
+        self.parts.append("<%s%s>" % (tag, attr))
+        if not empty:
+            self.stack.append(tag)
+
+    def handle_endtag(self, tag):
+        tag = _plain_tag(tag)
+        if self.skip:
+            self.skip -= 1
+            return
+        if self.stack and self.stack[-1] == tag:
+            self.stack.pop()
+            self.parts.append("</%s>" % tag)
+
+    def handle_data(self, data):
+        if not self.skip:
+            self.parts.append(_escape(data))
+
+
+def _plain_tag(tag):
+    tag = tag.lower()
+    if tag == "b":
+        return "strong"
+    if tag == "i":
+        return "em"
+    return tag
+
+
+def _attr(attrs, name):
+    for key, value in attrs:
+        if key.lower() == name:
+            return (value or "").strip()
+    return ""
+
+
+def _escape(text):
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
 
 
 def delete_course(items, course_id):
@@ -225,7 +326,7 @@ def public_sections(course):
         visible.append({
             "id": section["id"],
             "title": section["title"],
-            "text": section.get("text") or "",
+            "text": clean_section_html(section.get("text") or ""),
         })
     return visible
 
