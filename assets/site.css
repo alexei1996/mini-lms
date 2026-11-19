@@ -190,6 +190,26 @@ button.button {
   padding-bottom: 0.35rem;
 }
 
+.option-preview {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.option-preview p {
+  margin: 0.2rem 0 0;
+  color: #6b6458;
+  font-size: 0.9rem;
+}
+
+.option-preview img {
+  display: block;
+  max-width: min(100%, 28rem);
+  max-height: 8rem;
+  border: 1px solid #ddd6c8;
+  border-radius: 0.3rem;
+  background: #fff;
+}
+
 .thumbs img {
   flex: 0 0 auto;
   height: 4.5rem;
@@ -230,6 +250,18 @@ textarea {
 }
 
 .choice input { width: auto; }
+
+.choice.is-correct {
+  background: #f3f7ef;
+  border-radius: 0.4rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.key-mark {
+  color: #2f6b3a;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
 
 .score {
   font-size: 1.4rem;

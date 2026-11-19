@@ -30,7 +30,7 @@
     root.append(el("h1", null, "Вход учителя"));
     if (message) root.append(el("p", "message", message));
     var form = el("form", "stack");
-    var email = field("Почта", "email");
+    var email = field("Имя", "text");
     var password = field("Пароль", "password");
     var submit = el("button", "button", "Войти");
     submit.type = "submit";
@@ -42,7 +42,7 @@
         password: password.input.value,
       }).then(function (result) {
         if (!result.ok) {
-          showLogin("Неверная почта или пароль.");
+          showLogin("Неверное имя или пароль.");
           return;
         }
         showCourses();
@@ -349,18 +349,37 @@
     var file = document.createElement("input");
     file.type = "file";
     file.accept = "image/png,image/jpeg";
+    var preview = el("div", "option-preview");
+    var caption = el("p", null, "");
+    var thumb = document.createElement("img");
+    thumb.alt = "Картинка варианта";
+    function showImage(src) {
+      thumb.src = src;
+      caption.textContent = "Ученик увидит эту картинку";
+      if (!preview.contains(thumb)) preview.prepend(thumb);
+    }
+    function showEmpty() {
+      thumb.removeAttribute("src");
+      if (preview.contains(thumb)) preview.removeChild(thumb);
+      caption.textContent = "Картинки нет. Ученик увидит только текст.";
+    }
+    if (option.image) showImage("/api/test-image/" + option.image);
+    else showEmpty();
     file.addEventListener("change", function () {
       var image = file.files && file.files[0];
       if (!image) return;
       var reader = new FileReader();
       reader.onload = function () {
+        showImage(String(reader.result));
         api("/api/test-image", { contentBase64: String(reader.result).split(",")[1] }).then(function (result) {
           if (result.ok) row.dataset.image = result.payload.id;
+          else showEmpty();
         });
       };
       reader.readAsDataURL(image);
     });
-    row.append(text, correctLabel, file);
+    preview.append(caption);
+    row.append(text, correctLabel, file, preview);
     return row;
   }
 

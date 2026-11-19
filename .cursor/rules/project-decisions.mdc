@@ -11,13 +11,13 @@ Read `docs/DECISIONS.md`, `docs/CONTEXT.md`, and `docs/adr/` before changing sco
 - Learners are adults. Names and email may be stored. Do not build the school pseudonym, PIN card, or teacher-key encryption scheme unless a later decision says so.
 - A presentation is site pages. Do not ship the source PowerPoint or PDF to students and do not add a Download button. Do not claim screenshots are blocked.
 - The teacher authors tests in a browser form: question text, a chosen number of options, LaTeX, basic formatting, and uploaded images. Hand-edited JSON is not the teacher's workflow.
-- Answer keys must not ship in the public site files.
+- Published tests include which options are correct. The student sees those options on the test page, including on GitHub Pages. This is a self-check. Do not hide the key from the public catalog. The teacher password still stays out of the repository.
 - A student types a name and email with no password. The stored name is whatever they typed. Do not add accounts or PIN cards for students in v1.
 - v1 questions are choice questions only (one or many correct; text or image options) and are auto-scored. Numeric calculation items are post-v1.
 - The teacher uploads a finished PowerPoint or PDF from a file dialog on the teacher pages. Students page through slides. Do not build a slide editor, do not offer the source file, and do not promise animations.
-- Teacher pages (authoring, deck upload, submissions) require the teacher's email and password. Students have no password. A test or deck stays a draft until the teacher publishes it.
+- Teacher pages (authoring, deck upload, submissions) require the teacher's name and password. The development login is stored only in the gitignored local file. Students have no password. A test or deck stays a draft until the teacher publishes it.
 - Images in questions are uploads. Generate pictures in chat when asked, then the teacher inserts the file. Do not add an in-form image-generation button.
-- After submit, the student sees "Sent" and the score only. Do not reveal the correct options. Retakes are a per-test switch, on by default. Each accepted submit is a new attempt; the attempt number is per typed name + email + test.
+- Correct options are marked on the test page the whole time. After Check, the student also sees "Sent" and the score. Score in the browser from the published key so GitHub Pages can grade without a server. Retakes are a per-test switch, on by default. When the teacher server is running, each accepted submit is still a new attempt; the attempt number is per typed name + email + test.
 - Score is all-or-nothing per question, one point each. Past attempts keep the test version that was submitted.
 - A student on another computer opens the GitHub Pages site. Publish sends slide images into the repository so the site can show them. Do not commit the PowerPoint, PDF, or `data/` drafts. Do not promise that a visible slide cannot be saved.
 - A submission is stored in full in Supabase, copied as a grade row to a Google Sheet, and announced in one Telegram line (time, course, test, name, email, score, attempt). Secrets for Sheets and Telegram stay off the public site. A Sheet or Telegram failure does not roll back a saved attempt.

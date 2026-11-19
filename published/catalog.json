@@ -90,22 +90,26 @@
               {
                 "id": "o1",
                 "text": "Неправильный вариант 1",
-                "image": ""
+                "image": "",
+                "correct": false
               },
               {
                 "id": "o2",
                 "text": "Правильный вариант",
-                "image": ""
+                "image": "",
+                "correct": true
               },
               {
                 "id": "o17950673094072",
                 "text": "Неправильный вариант 3",
-                "image": ""
+                "image": "",
+                "correct": false
               },
               {
                 "id": "o17950673094073",
                 "text": "Неправильный вариант 4",
-                "image": ""
+                "image": "",
+                "correct": false
               }
             ]
           },
@@ -121,27 +125,32 @@
               {
                 "id": "o1",
                 "text": "",
-                "image": "tests/published/c2/t1/q1795067324702-o1-2cb10052e2c29785.png"
+                "image": "tests/published/c2/t1/q1795067324702-o1-2cb10052e2c29785.png",
+                "correct": false
               },
               {
                 "id": "o2",
                 "text": "",
-                "image": "tests/published/c2/t1/q1795067324702-o2-0fa9854b3c189837.png"
+                "image": "tests/published/c2/t1/q1795067324702-o2-0fa9854b3c189837.png",
+                "correct": false
               },
               {
                 "id": "o17950675155402",
                 "text": "",
-                "image": "tests/published/c2/t1/q1795067324702-o17950675155402-9a5b8baf2cc5a9bc.png"
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155402-9a5b8baf2cc5a9bc.png",
+                "correct": false
               },
               {
                 "id": "o17950675155413",
                 "text": "",
-                "image": "tests/published/c2/t1/q1795067324702-o17950675155413-7fe79562dc5f9822.png"
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155413-7fe79562dc5f9822.png",
+                "correct": false
               },
               {
                 "id": "o17950675155414",
                 "text": "",
-                "image": "tests/published/c2/t1/q1795067324702-o17950675155414-35e216520d7cc7d4.png"
+                "image": "tests/published/c2/t1/q1795067324702-o17950675155414-35e216520d7cc7d4.png",
+                "correct": true
               }
             ]
           }

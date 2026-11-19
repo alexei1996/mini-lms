@@ -20,7 +20,7 @@ def question(correct_ids, question_id="q1"):
 
 
 class ScoringTest(unittest.TestCase):
-    def test_student_view_has_no_correct_flag(self):
+    def test_student_view_includes_the_answer_key(self):
         test = {
             "id": "t1",
             "title": "Проверка",
@@ -29,7 +29,8 @@ class ScoringTest(unittest.TestCase):
             "questions": [question({"a"})],
         }
         student = scoring.to_student_test(test, "c1")
-        self.assertNotIn("correct", str(student))
+        self.assertTrue(student["questions"][0]["options"][0]["correct"])
+        self.assertFalse(student["questions"][0]["options"][1]["correct"])
         self.assertEqual(student["questions"][0]["options"][0]["id"], "a")
 
     def test_score_matches_only_the_whole_set(self):

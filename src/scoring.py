@@ -16,6 +16,7 @@ def to_student_test(test, course_id):
                 "id": option["id"],
                 "text": option.get("text") or "",
                 "image": option_image_path(course_id, test["id"], question["id"], option),
+                "correct": bool(option.get("correct")),
             })
         questions.append({
             "id": question["id"],

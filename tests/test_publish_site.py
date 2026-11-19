@@ -104,7 +104,7 @@ class PublishSiteTest(unittest.TestCase):
         self.assertEqual([item["text"] for item in sections], ["видно ученику"])
         self.assertNotIn("published", sections[0])
 
-    def test_published_test_omits_the_answer_key(self):
+    def test_published_test_includes_the_answer_key(self):
         courses = [{
             "id": "c1",
             "title": "Курс",
@@ -127,7 +127,7 @@ class PublishSiteTest(unittest.TestCase):
         }]
         catalog = publish_site.published_catalog(courses)
         dumped = json.dumps(catalog)
-        self.assertNotIn("correct", dumped)
+        self.assertIn('"correct": true', dumped)
         self.assertEqual(catalog[0]["tests"][0]["questions"][0]["options"][0]["text"], "один")
 
 

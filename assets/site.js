@@ -236,6 +236,10 @@
         choice.append(box);
         var text = el("span", null, option.text || "");
         choice.append(text);
+        if (option.correct) {
+          choice.classList.add("is-correct");
+          choice.append(el("span", "key-mark", "Верный"));
+        }
         if (option.image) {
           var image = document.createElement("img");
           image.src = option.image;
@@ -259,6 +263,7 @@
         if (!answers[box.name]) answers[box.name] = [];
         answers[box.name].push(box.value);
       });
+      var local = grade(test, answers);
       fetch("/api/attempt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -278,23 +283,45 @@
           root.insertBefore(el("p", "message", "Впишите имя и почту."), form);
           return;
         }
-        form.remove();
         if (!result.ok && result.payload.error === "retake") {
-          root.append(el("p", "message", "Повторная сдача этого теста закрыта."));
+          root.insertBefore(el("p", "message", "Повторная сдача этого теста закрыта."), form);
           return;
         }
         if (!result.ok) {
-          root.append(el("p", "message", "Отправить ответы с сайта GitHub пока нельзя. Откройте курс на компьютере учителя."));
+          showScore(root, local);
           return;
         }
-        root.append(el("p", "message", "Отправлено"));
-        root.append(el("p", "score", "Правильных ответов: " + result.payload.score + " из " + result.payload.total));
+        showScore(root, result.payload);
       }).catch(function () {
-        form.remove();
-        root.append(el("p", "message", "Отправить ответы с сайта GitHub пока нельзя. Откройте курс на компьютере учителя."));
+        showScore(root, local);
       });
     });
     root.append(form);
+  }
+
+  function grade(test, answers) {
+    var score = 0;
+    (test.questions || []).forEach(function (question) {
+      var correct = [];
+      (question.options || []).forEach(function (option) {
+        if (option.correct) correct.push(option.id);
+      });
+      var chosen = answers[question.id] || [];
+      var same = chosen.length === correct.length;
+      chosen.forEach(function (id) {
+        if (correct.indexOf(id) < 0) same = false;
+      });
+      if (same) score += 1;
+    });
+    return { score: score, total: (test.questions || []).length };
+  }
+
+  function showScore(root, result) {
+    root.querySelectorAll(".score-line").forEach(function (node) { node.remove(); });
+    var sent = el("p", "message score-line", "Отправлено");
+    var score = el("p", "score score-line", "Правильных ответов: " + result.score + " из " + result.total);
+    root.insertBefore(score, root.querySelector(".test-form"));
+    root.insertBefore(sent, score);
   }
 
   function fieldLabel(text, input) {
