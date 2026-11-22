@@ -152,6 +152,358 @@
         "text": "<div><strong>Перечень рекомендуемой литературы </strong></div><div><br></div><div>Основным источником, вдохновившем данный цикл лекций является монография <em>Schubert, U. S. An introduction to redox polymers for energy-storage applications / U. S. Schubert, G. R. Newkome, A. Winter. – Weinheim, Germany : Wiley-VCH, 2023. – 537 с.</em> </div><div><br></div><div>Достаточно фундаментальными источниками.  Bard, A. J. Electrochemical methods: fundamentals and applications. Electrochemical methods / A. J. Bard, L. R. Faulkner, H. S. White. – Third edition-е изд. – Hoboken, NJ : Wiley, 2022.\n4.  Electropolymerization: Concepts, Materials and Applications. Electropolymerization / ed. by S. Cosnier, A. Karyakin. – 1th ed. – Wiley, 2010.\n5.  Handbook of conducting polymers. Conjugated polymers: processing and applications. Handbook of conducting polymers. Conjugated polymers / ed. T.A.Skotheim, J.R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с.\n6.  Handbook of conducting polymers. Conjugated polymers: theory, synthesis, properties, and characterization. Handbook of conducting polymers. Conjugated polymers / ed. T. A. Skotheim, J. R. Reynolds. – 3rd ed. – Boca Raton : CRC Press, 2007. – 1 с.</div>"
       }
     ],
-    "tests": []
+    "tests": [
+      {
+        "id": "t1",
+        "title": "Тест по теме 1 (структура сопряженных и редокс полимеров)",
+        "allowRetake": true,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какие из перечисленных полимерных структур относятся к сопряженным полимерам?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "А",
+                "image": "tests/published/c2/t1/q1-oА-2f94c8cda0c6286d.png",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Б",
+                "image": "tests/published/c2/t1/q1-oБ-4d6811a8d49d6ecb.png",
+                "correct": true
+              },
+              {
+                "id": "oВ",
+                "text": "В",
+                "image": "tests/published/c2/t1/q1-oВ-e8ddab032bbf3628.png",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "Г",
+                "image": "tests/published/c2/t1/q1-oГ-3f56404ab4394d59.png",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q2",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какая из приведенных химических структур соответствует положительно заряженному полярону (радикал-катиону) в цепи политиофена?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "А",
+                "image": "tests/published/c2/t1/q2-oА-349946ffc8471bcf.png",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Б",
+                "image": "tests/published/c2/t1/q2-oБ-1d8c6bcd312792d1.png",
+                "correct": false
+              },
+              {
+                "id": "oВ",
+                "text": "В",
+                "image": "tests/published/c2/t1/q2-oВ-788fc5afb776d90c.png",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "Г",
+                "image": "tests/published/c2/t1/q2-oГ-0a38f09df73ba6a1.png",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q3",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какое изображение корректно иллюстрирует нейтральный солитон (топологический дефект на границе фаз А и Б с неспаренным электроном)?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "А",
+                "image": "tests/published/c2/t1/q3-oА-0a38f09df73ba6a1.png",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Б",
+                "image": "tests/published/c2/t1/q3-oБ-a7c635e0516e28ac.png",
+                "correct": false
+              },
+              {
+                "id": "oВ",
+                "text": "В",
+                "image": "tests/published/c2/t1/q3-oВ-349946ffc8471bcf.png",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "Г",
+                "image": "tests/published/c2/t1/q3-oГ-1d8c6bcd312792d1.png",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q4",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "В чем заключаются следствия пайерлсовского искажения (эффекта Пайерлса) в одномерной сопряженной цепи нейтрального полимера?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "Происходит чередование (альтернация) длин связей вдоль цепи с удвоением периода решетки",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Открывается запрещенная зона Eg между валентной зоной и зоной проводимости, поэтому нейтральный полимер не является металлом",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oВ",
+                "text": "Все связи вдоль цепи выравниваются до одинаковой длины 1.40 Å, а валентная зона остается заполненной ровно наполовину",
+                "image": "",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "В исходном нейтральном состоянии без допирования возникает металлическая проводимость за счет свободных электронов в зоне проводимости",
+                "image": "",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q5",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какая зонная диаграмма соответствует положительному полярону (заряд q+, спин 1/2) в сопряженном полимере?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "А",
+                "image": "tests/published/c2/t1/q5-oА-08e0ba613df323fb.png",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Б",
+                "image": "tests/published/c2/t1/q5-oБ-e9ff69d558c43ce9.png",
+                "correct": false
+              },
+              {
+                "id": "oВ",
+                "text": "В",
+                "image": "tests/published/c2/t1/q5-oВ-cdd982e1b6d70b77.png",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "Г",
+                "image": "tests/published/c2/t1/q5-oГ-c833b2b88a54db70.png",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q6",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какие утверждения верны для биполярона в гетероциклическом сопряженном полимере при глубоком окислении (p-допировании)?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "Биполярон обладает нулевым спином (s = 0) и удвоенным зарядом (q = 2e для дикатиона)",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Образование биполярона термодинамически стабилизируется за счет выигрыша энергии релаксации решетки и спаривания спинов, компенсирующих кулоновское отталкивание",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oВ",
+                "text": "В оптическом спектре биполярон характеризуется двумя разрешенными переходами, смещенными в БИК-область",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oГ",
+                "text": "Биполярон является парамагнитной частицей со спином s = 1/2 и нулевым суммарным зарядом",
+                "image": "",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q7",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Почему в гетероциклических полимерах с невырожденным основным состоянием (например, в политиофене) не образуется свободный одиночный солитон при транспорте заряда?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "Ароматическая и хиноидная формы энергетически неэквивалентны, и при движении солитона область высокоэнергетической фазы росла бы по мере удаления дефектов",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "В политиофене полностью отсутствуют атомы углерода с 2pz-орбиталями",
+                "image": "",
+                "correct": false
+              },
+              {
+                "id": "oВ",
+                "text": "У политиофена отсутствует запрещенная зона даже в нелегированном состоянии",
+                "image": "",
+                "correct": false
+              },
+              {
+                "id": "oГ",
+                "text": "Энергия ароматической и хиноидной структур политиофена строго равна во всех точках цепи",
+                "image": "",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q8",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какая схема надмолекулярной ориентации соответствует преимущественной ориентации «плоскостью к поверхности» (face-on)?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "А",
+                "image": "tests/published/c2/t1/q8-oА-9002b53e75f7efe5.png",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Б",
+                "image": "tests/published/c2/t1/q8-oБ-ce4b316b4f1e17f1.png",
+                "correct": false
+              },
+              {
+                "id": "oВ",
+                "text": "В",
+                "image": "tests/published/c2/t1/q8-oВ-a3c0b4baf8606869.png",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q9",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какие факторы способствуют повышению макроскопической электропроводности сопряженных полимеров в твердой фазе?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "Уменьшение расстояния π–π-стекинга между сопряженными цепями",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "Увеличение размеров кристаллических областей (кристаллитов) и наличие проходных цепей",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oВ",
+                "text": "Формирование однородной текстуры вместо хаотической смеси разориентированных доменов с границами зерен",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oГ",
+                "text": "Увеличение торсионных разворотов соседних звеньев, разрывающих сопряжение на короткие участки",
+                "image": "",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q10",
+            "prompt": [
+              {
+                "type": "text",
+                "text": "Какие электронные состояния и оптические переходы характерны для допированного полипиррола при образовании полярона и биполярона?"
+              }
+            ],
+            "options": [
+              {
+                "id": "oА",
+                "text": "При переходе от полярона к биполярону дискретные уровни внутри запрещенной зоны сдвигаются глубже к ее середине",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oБ",
+                "text": "В УФ-вид-БИК спектрах поглощения поляронное состояние проявляется в виде трех выраженных полос с энергиями меньше ширины запрещенной зоны Eg",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oВ",
+                "text": "Для биполярона в полипирроле число разрешенных оптических переходов с участием внутризонных уровней сокращается до двух, смещенных в БИК-область",
+                "image": "",
+                "correct": true
+              },
+              {
+                "id": "oГ",
+                "text": "При образовании биполярона в запрещенной зоне остается единственный наполовину заполненный уровень строго посередине между валентной зоной и зоной проводимости",
+                "image": "",
+                "correct": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]
