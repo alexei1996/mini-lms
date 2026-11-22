@@ -318,6 +318,10 @@
       fragments.append(fragmentEditor({ type: "text", text: "" }));
     });
     block.append(fragments, addFragment);
+    var picture = questionPicture(question.image || "");
+    block.dataset.image = question.image || "";
+    picture.onImage = function (id) { block.dataset.image = id; };
+    block.append(picture);
     var options = el("div");
     (question.options || []).forEach(function (option) {
       options.append(optionEditor(option));
@@ -339,6 +343,47 @@
     countRow.append(count, applyCount);
     block.append(options, countRow);
     return block;
+  }
+
+  function questionPicture(imageId) {
+    var row = el("div", "row");
+    var file = document.createElement("input");
+    file.type = "file";
+    file.accept = "image/png,image/jpeg";
+    var preview = el("div", "option-preview");
+    var caption = el("p", null, "");
+    var thumb = document.createElement("img");
+    thumb.alt = "Картинка вопроса";
+    function showImage(src) {
+      thumb.src = src;
+      caption.textContent = "Эту картинку ученик увидит под текстом вопроса";
+      if (!preview.contains(thumb)) preview.prepend(thumb);
+    }
+    function showEmpty() {
+      thumb.removeAttribute("src");
+      if (preview.contains(thumb)) preview.removeChild(thumb);
+      caption.textContent = "Картинки к вопросу нет.";
+      row.onImage("");
+    }
+    row.onImage = function () {};
+    if (imageId) showImage("/api/test-image/" + imageId);
+    else showEmpty();
+    file.addEventListener("change", function () {
+      var image = file.files && file.files[0];
+      if (!image) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        showImage(String(reader.result));
+        api("/api/test-image", { contentBase64: String(reader.result).split(",")[1] }).then(function (result) {
+          if (result.ok) row.onImage(result.payload.id);
+          else showEmpty();
+        });
+      };
+      reader.readAsDataURL(image);
+    });
+    preview.append(caption);
+    row.append(file, preview);
+    return row;
   }
 
   function fragmentEditor(fragment) {
@@ -427,7 +472,12 @@
           correct: row.querySelector("input[type=checkbox]").checked,
         });
       });
-      questions.push({ id: block.dataset.question, prompt: prompt, options: options });
+      questions.push({
+        id: block.dataset.question,
+        prompt: prompt,
+        image: block.dataset.image || "",
+        options: options,
+      });
     });
     return questions;
   }

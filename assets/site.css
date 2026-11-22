@@ -288,6 +288,12 @@ textarea {
   padding: 0.9rem 1rem;
 }
 
+.question-figure {
+  display: block;
+  max-width: min(100%, 36rem);
+  margin: 0.6rem 0;
+}
+
 .question {
   border-top: 1px solid #ddd6c8;
   margin-top: 0.8rem;

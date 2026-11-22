@@ -224,6 +224,13 @@
       var legend = el("legend", null, "Вопрос " + (index + 1));
       block.append(legend);
       renderPrompt(block, question.prompt);
+      if (question.image) {
+        var figure = document.createElement("img");
+        figure.className = "question-figure";
+        figure.src = question.image;
+        figure.alt = "";
+        block.append(figure);
+      }
       (question.options || []).forEach(function (option) {
         var choice = el("label", "choice");
         var box = document.createElement("input");

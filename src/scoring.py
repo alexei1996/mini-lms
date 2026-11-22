@@ -18,11 +18,15 @@ def to_student_test(test, course_id):
                 "image": option_image_path(course_id, test["id"], question["id"], option),
                 "correct": bool(option.get("correct")),
             })
-        questions.append({
+        student_question = {
             "id": question["id"],
             "prompt": copy.deepcopy(question.get("prompt") or []),
             "options": options,
-        })
+        }
+        picture = question_image_path(course_id, test["id"], question)
+        if picture:
+            student_question["image"] = picture
+        questions.append(student_question)
     return {
         "id": test["id"],
         "title": test.get("title") or "Тест",
@@ -38,6 +42,13 @@ def student_tests(course):
             continue
         visible.append(to_student_test(test, course["id"]))
     return visible
+
+
+def question_image_path(course_id, test_id, question):
+    image = question.get("image") or ""
+    if not image:
+        return ""
+    return "tests/published/%s/%s/%s-%s" % (course_id, test_id, question["id"], image)
 
 
 def option_image_path(course_id, test_id, question_id, option):

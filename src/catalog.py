@@ -242,9 +242,13 @@ def normalize_questions(raw):
         while question_id in seen:
             question_id += "x"
         seen.add(question_id)
+        image = str(item.get("image") or "")
+        if "/" in image or "\\" in image:
+            image = ""
         questions.append({
             "id": question_id,
             "prompt": normalize_prompt(item.get("prompt")),
+            "image": image,
             "options": normalize_options(item.get("options")),
         })
     return questions

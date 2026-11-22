@@ -91,6 +91,13 @@ def copy_test_images(root, courses):
             if not test.get("published"):
                 continue
             for question in test.get("questions") or []:
+                picture = question.get("image") or ""
+                if picture:
+                    origin = root / "data" / "test-images" / picture
+                    target = root / scoring.question_image_path(course["id"], test["id"], question)
+                    if origin.is_file():
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(origin, target)
                 for option in question.get("options") or []:
                     image = option.get("image") or ""
                     if not image:
