@@ -65,17 +65,23 @@ METHOD_SECTION = {
     "id": "method",
     "title": "Методические материалы",
 }
+ANNOUNCE_SECTION = {
+    "id": "announce",
+    "title": "Объявления",
+}
+COURSE_SECTIONS = (METHOD_SECTION, ANNOUNCE_SECTION)
 
 
 def ensure_sections(course):
     sections = course.setdefault("sections", [])
-    if not any(section["id"] == METHOD_SECTION["id"] for section in sections):
-        sections.append({
-            "id": METHOD_SECTION["id"],
-            "title": METHOD_SECTION["title"],
-            "text": "",
-            "published": False,
-        })
+    for spec in COURSE_SECTIONS:
+        if not any(section["id"] == spec["id"] for section in sections):
+            sections.append({
+                "id": spec["id"],
+                "title": spec["title"],
+                "text": "",
+                "published": False,
+            })
     return sections
 
 

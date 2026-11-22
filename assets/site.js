@@ -1,4 +1,5 @@
 (function () {
+  if (!window.LMS_OPEN) return;
   var params = new URLSearchParams(window.location.search);
 
   function courseById(id) {
@@ -66,6 +67,8 @@
     root.append(el("h1", null, course.title));
 
     var sections = course.sections || [];
+    var byId = {};
+    sections.forEach(function (section) { byId[section.id] = section; });
     var hasText = sections.some(function (section) { return section.text; });
     var empty = course.presentations.length === 0 && !hasText && course.tests.length === 0;
     if (empty) {
@@ -73,6 +76,8 @@
         el("p", "message", "В этом курсе пока ничего не опубликовано.")
       );
     }
+
+    paintNamedSection(root, "Объявления", byId.announce, "Объявлений пока нет.");
 
     root.append(el("h2", null, "Презентации"));
     root.append(itemList(course.presentations, function (presentation) {
@@ -83,15 +88,7 @@
       );
     }, "Презентаций пока нет."));
 
-    root.append(el("h2", null, "Методические материалы"));
-    var materials = sections.filter(function (section) { return section.text; });
-    if (materials.length === 0) {
-      root.append(el("p", "empty", "Материалов пока нет."));
-    } else {
-      materials.forEach(function (section) {
-        root.append(reading(section.text));
-      });
-    }
+    paintNamedSection(root, "Методические материалы", byId.method, "Материалов пока нет.");
 
     root.append(el("h2", null, "Тесты"));
     root.append(itemList(course.tests, function (test) {
@@ -103,6 +100,13 @@
     }, "Тестов пока нет."));
 
     root.append(linkTo("index.html", "Ко всем курсам", "text-link back"));
+  }
+
+  function paintNamedSection(root, title, section, emptyText) {
+    if (!section) return;
+    root.append(el("h2", null, title));
+    if (!section.text) root.append(el("p", "empty", emptyText));
+    else root.append(reading(section.text));
   }
 
   function itemList(items, renderItem, emptyText) {

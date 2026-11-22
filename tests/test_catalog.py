@@ -41,6 +41,7 @@ class CatalogTest(unittest.TestCase):
     def test_section_text_stays_hidden_until_published(self):
         course = catalog.create_course("Курс", [])
         catalog.ensure_sections(course)
+        self.assertEqual([section["id"] for section in course["sections"]], ["method", "announce"])
         catalog.set_section(course, "method", "Для ученика", False)
         self.assertEqual(catalog.public_course(course)["sections"], [])
         catalog.set_section(course, "method", "Для ученика", True)

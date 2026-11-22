@@ -137,7 +137,8 @@
     return fold("course-" + course.id, course.title, [
       tools,
       fold("presentations-" + course.id, "Презентации", presentations),
-      fold("materials-" + course.id, "Методические материалы", [materialsEditor(course)]),
+      fold("announce-" + course.id, "Объявления", [sectionEditor(course, "announce")]),
+      fold("materials-" + course.id, "Методические материалы", [sectionEditor(course, "method")]),
       fold("tests-" + course.id, "Тесты", [testsBlock(course, attempts)]),
     ]);
   }
@@ -308,6 +309,16 @@
     var block = el("fieldset", "question");
     block.dataset.question = question.id;
     block.append(el("legend", null, "Вопрос " + (index + 1)));
+    var removeQuestion = el("button", "button button-quiet", "Удалить вопрос");
+    removeQuestion.type = "button";
+    removeQuestion.addEventListener("click", function () {
+      if (!window.confirm("Удалить этот вопрос?")) return;
+      var fold = block.closest("details");
+      var list = fold.parentElement;
+      fold.remove();
+      renumberQuestions(list);
+    });
+    block.append(removeQuestion);
     var fragments = el("div");
     (question.prompt || [{ type: "text", text: "" }]).forEach(function (fragment) {
       fragments.append(fragmentEditor(fragment));
@@ -343,6 +354,15 @@
     countRow.append(count, applyCount);
     block.append(options, countRow);
     return block;
+  }
+
+  function renumberQuestions(list) {
+    Array.prototype.forEach.call(list.children, function (fold, index) {
+      var summary = fold.querySelector("summary");
+      if (summary) summary.textContent = "Вопрос " + (index + 1);
+      var legend = fold.querySelector("legend");
+      if (legend) legend.textContent = "Вопрос " + (index + 1);
+    });
   }
 
   function questionPicture(imageId) {
@@ -449,7 +469,16 @@
       reader.readAsDataURL(image);
     });
     preview.append(caption);
-    row.append(text, correctLabel, file, preview);
+    var removeOption = el("button", "button button-quiet", "Удалить вариант");
+    removeOption.type = "button";
+    removeOption.addEventListener("click", function () {
+      if (!window.confirm("Удалить этот вариант ответа?")) return;
+      var list = row.parentElement;
+      row.remove();
+      var count = list.parentElement.querySelector("input[type=number]");
+      if (count) count.value = String(Math.max(list.children.length, 2));
+    });
+    row.append(text, correctLabel, file, removeOption, preview);
     return row;
   }
 
@@ -482,10 +511,10 @@
     return questions;
   }
 
-  function materialsEditor(course) {
+  function sectionEditor(course, sectionId) {
     var section = (course.sections || []).filter(function (item) {
-      return item.id === "method";
-    })[0] || { id: "method", text: "", published: false };
+      return item.id === sectionId;
+    })[0] || { id: sectionId, text: "", published: false };
     var block = el("div");
     var state = section.published ? "Опубликованы" : "Черновик";
     block.append(el("p", null, state));
