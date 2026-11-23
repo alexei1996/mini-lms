@@ -77,36 +77,51 @@
       );
     }
 
-    paintNamedSection(root, "Объявления", byId.announce, "Объявлений пока нет.");
-
-    root.append(el("h2", null, "Презентации"));
-    root.append(itemList(course.presentations, function (presentation) {
-      return linkTo(
-        "slides.html?course=" + encodeURIComponent(course.id) +
-          "&presentation=" + encodeURIComponent(presentation.id),
-        presentation.title
-      );
-    }, "Презентаций пока нет."));
-
-    paintNamedSection(root, "Методические материалы", byId.method, "Материалов пока нет.");
-
-    root.append(el("h2", null, "Тесты"));
-    root.append(itemList(course.tests, function (test) {
-      return linkTo(
-        "test.html?course=" + encodeURIComponent(course.id) +
-          "&test=" + encodeURIComponent(test.id),
-        test.title
-      );
-    }, "Тестов пока нет."));
+    root.append(fold("Презентации", [
+      itemList(course.presentations, function (presentation) {
+        return linkTo(
+          "slides.html?course=" + encodeURIComponent(course.id) +
+            "&presentation=" + encodeURIComponent(presentation.id),
+          presentation.title
+        );
+      }, "Презентаций пока нет."),
+    ]));
+    if (byId.announce) {
+      root.append(fold("Объявления", [
+        sectionBody(byId.announce, "Объявлений пока нет."),
+      ]));
+    }
+    if (byId.method) {
+      root.append(fold("Методические материалы", [
+        sectionBody(byId.method, "Материалов пока нет."),
+      ]));
+    }
+    root.append(fold("Тесты", [
+      itemList(course.tests, function (test) {
+        return linkTo(
+          "test.html?course=" + encodeURIComponent(course.id) +
+            "&test=" + encodeURIComponent(test.id),
+          test.title
+        );
+      }, "Тестов пока нет."),
+    ]));
 
     root.append(linkTo("index.html", "Ко всем курсам", "text-link back"));
   }
 
-  function paintNamedSection(root, title, section, emptyText) {
-    if (!section) return;
-    root.append(el("h2", null, title));
-    if (!section.text) root.append(el("p", "empty", emptyText));
-    else root.append(reading(section.text));
+  function fold(title, nodes) {
+    var box = document.createElement("details");
+    box.className = "fold";
+    var summary = document.createElement("summary");
+    summary.textContent = title;
+    box.append(summary);
+    nodes.forEach(function (node) { box.append(node); });
+    return box;
+  }
+
+  function sectionBody(section, emptyText) {
+    if (!section.text) return el("p", "empty", emptyText);
+    return reading(section.text);
   }
 
   function itemList(items, renderItem, emptyText) {
