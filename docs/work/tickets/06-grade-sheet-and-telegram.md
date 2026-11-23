@@ -1,6 +1,6 @@
 # 06 — Ведомость и Telegram
 
-Status: ready-for-agent
+Status: superseded by docs/work/specs/2026-11-23-gradebook.md
 Blocked by: 05
 Spec: docs/work/specs/2026-11-18-course-presentations-and-tests.md
 

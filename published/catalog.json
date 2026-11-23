@@ -162,6 +162,8 @@
         "id": "t1",
         "title": "Тест по теме 1 (структура сопряженных и редокс полимеров)",
         "allowRetake": true,
+        "edition": "48b54119729abff9",
+        "publishedOn": "",
         "questions": [
           {
             "id": "q1",
@@ -513,6 +515,8 @@
         "id": "t2",
         "title": "Тест по теме 2 (применение сопряженных и редокс полимеров)",
         "allowRetake": true,
+        "edition": "189da1bed3c2c378",
+        "publishedOn": "",
         "questions": [
           {
             "id": "q1",
@@ -870,6 +874,8 @@
         "id": "t3",
         "title": "Тест по теме 3 (синтез и получение сопряженных и редокс полимеров)",
         "allowRetake": true,
+        "edition": "fc0325785f2715e7",
+        "publishedOn": "",
         "questions": [
           {
             "id": "q1",

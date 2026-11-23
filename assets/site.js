@@ -268,20 +268,33 @@
         answers[box.name].push(box.value);
       });
       var local = grade(test, answers);
-      fetch("/api/attempt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courseId: course.id,
-          testId: test.id,
-          name: name.value,
-          answers: answers,
-        }),
-      }).then(function (response) {
-        return response.json().then(function (payload) {
-          return { ok: response.ok, payload: payload };
+      var script = postGrade(course, test, name.value, local);
+      var saved = script.then(function (scriptResult) {
+        if (scriptResult && scriptResult.error === "identity") {
+          root.insertBefore(el("p", "message", "Впишите имя."), form);
+          return "stop";
+        }
+        if (scriptResult && scriptResult.error === "retake") {
+          root.insertBefore(el("p", "message", "Повторная сдача этого теста закрыта."), form);
+          return "stop";
+        }
+        return fetch("/api/attempt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courseId: course.id,
+            testId: test.id,
+            name: name.value,
+            answers: answers,
+          }),
+        }).then(function (response) {
+          return response.json().then(function (payload) {
+            return { ok: response.ok, payload: payload };
+          });
         });
-      }).then(function (result) {
+      });
+      saved.then(function (result) {
+        if (result === "stop") return;
         if (!result.ok && result.payload.error === "identity") {
           root.insertBefore(el("p", "message", "Впишите имя."), form);
           return;
@@ -303,6 +316,31 @@
       });
     });
     root.append(form);
+  }
+
+  function postGrade(course, test, name, local) {
+    if (!window.LMS_GRADEBOOK || !test.edition) return Promise.resolve(null);
+    var payload = {
+      name: String(name || "").replace(/\s+/g, " ").trim(),
+      score: local.score,
+      total: local.total,
+      courseTitle: course.title,
+      testTitle: test.title,
+      edition: test.edition,
+      allowRetake: test.allowRetake !== false,
+      publishedOn: test.publishedOn || "",
+    };
+    if (!payload.name) return Promise.resolve({ ok: false, error: "identity" });
+    return fetch(window.LMS_GRADEBOOK, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    }).then(function (response) {
+      return response.json();
+    }).catch(function () {
+      return null;
+    });
   }
 
   function grade(test, answers) {

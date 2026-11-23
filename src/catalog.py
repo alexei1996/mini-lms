@@ -1,6 +1,9 @@
 import re
+from datetime import datetime
 from html.parser import HTMLParser
+from zoneinfo import ZoneInfo
 
+import gradebook
 import scoring
 
 _RICH_TAG = re.compile(r"<(?:p|div|br|strong|em|b|i|a)\b", re.I)
@@ -228,7 +231,16 @@ def save_test(course, test_id, title, allow_retake, questions, published):
     test["allowRetake"] = bool(allow_retake)
     test["questions"] = updated_questions
     test["published"] = bool(published)
+    if published:
+        edition = gradebook.grade_edition(test)
+        if edition != test.get("gradeEdition") or not test.get("gradePublishedOn"):
+            test["gradePublishedOn"] = _moscow_day()
+        test["gradeEdition"] = edition
     return test
+
+
+def _moscow_day():
+    return datetime.now(ZoneInfo("Europe/Moscow")).date().isoformat()
 
 
 def find_test(course, test_id):

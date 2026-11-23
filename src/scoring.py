@@ -1,5 +1,7 @@
 import copy
 
+import gradebook
+
 
 class AttemptError(ValueError):
     def __init__(self, code):
@@ -31,6 +33,8 @@ def to_student_test(test, course_id):
         "id": test["id"],
         "title": test.get("title") or "Тест",
         "allowRetake": bool(test.get("allowRetake", True)),
+        "edition": gradebook.grade_edition(test),
+        "publishedOn": test.get("gradePublishedOn") or "",
         "questions": questions,
     }
 
