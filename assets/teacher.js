@@ -329,7 +329,7 @@
       fragments.append(fragmentEditor({ type: "text", text: "" }));
     });
     block.append(fragments, addFragment);
-    var picture = questionPicture(question.image || "");
+    var picture = questionPicture(question.image || "", question.imagePercent);
     block.dataset.image = question.image || "";
     picture.onImage = function (id) { block.dataset.image = id; };
     block.append(picture);
@@ -365,8 +365,8 @@
     });
   }
 
-  function questionPicture(imageId) {
-    var row = el("div", "row");
+  function questionPicture(imageId, percent) {
+    var row = el("div", "row question-picture");
     var file = document.createElement("input");
     file.type = "file";
     file.accept = "image/png,image/jpeg";
@@ -402,8 +402,22 @@
       reader.readAsDataURL(image);
     });
     preview.append(caption);
-    row.append(file, preview);
+    row.append(file, percentField(percent), preview);
     return row;
+  }
+
+  function percentField(value) {
+    var input = document.createElement("input");
+    input.type = "number";
+    input.min = "10";
+    input.max = "40";
+    input.step = "1";
+    input.className = "percent";
+    input.dataset.percent = "1";
+    input.placeholder = "20";
+    input.setAttribute("aria-label", "Высота, %");
+    if (value) input.value = String(value);
+    return input;
   }
 
   function fragmentEditor(fragment) {
@@ -469,6 +483,7 @@
       reader.readAsDataURL(image);
     });
     preview.append(caption);
+    var height = percentField(option.imagePercent);
     var removeOption = el("button", "button button-quiet", "Удалить вариант");
     removeOption.type = "button";
     removeOption.addEventListener("click", function () {
@@ -478,7 +493,7 @@
       var count = list.parentElement.querySelector("input[type=number]");
       if (count) count.value = String(Math.max(list.children.length, 2));
     });
-    row.append(text, correctLabel, file, removeOption, preview);
+    row.append(text, correctLabel, file, height, removeOption, preview);
     return row;
   }
 
@@ -498,6 +513,7 @@
           id: row.dataset.option,
           text: row.querySelector("input[type=text]").value,
           image: row.dataset.image || "",
+          imagePercent: row.querySelector("[data-percent]").value,
           correct: row.querySelector("input[type=checkbox]").checked,
         });
       });
@@ -505,6 +521,7 @@
         id: block.dataset.question,
         prompt: prompt,
         image: block.dataset.image || "",
+        imagePercent: block.querySelector(".question-picture [data-percent]").value,
         options: options,
       });
     });

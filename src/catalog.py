@@ -4,6 +4,7 @@ from html.parser import HTMLParser
 from zoneinfo import ZoneInfo
 
 import gradebook
+import pictures
 import scoring
 
 _RICH_TAG = re.compile(r"<(?:p|div|br|strong|em|b|i|a)\b", re.I)
@@ -224,7 +225,7 @@ def add_test(course, title):
 
 def save_test(course, test_id, title, allow_retake, questions, published):
     test = find_test(course, test_id)
-    updated_questions = normalize_questions(questions)
+    updated_questions = normalize_questions(questions, test.get("questions"))
     if published and not scoring.ready_to_publish({"questions": updated_questions}):
         raise ValueError("incomplete")
     test["title"] = " ".join((title or "").split()) or "Тест"
@@ -250,9 +251,10 @@ def find_test(course, test_id):
     raise KeyError(test_id)
 
 
-def normalize_questions(raw):
+def normalize_questions(raw, previous=None):
     questions = []
     seen = set()
+    earlier = _by_id(previous)
     for index, item in enumerate(raw or [], start=1):
         if not isinstance(item, dict):
             continue
@@ -263,11 +265,13 @@ def normalize_questions(raw):
         image = str(item.get("image") or "")
         if "/" in image or "\\" in image:
             image = ""
+        old = earlier.get(question_id, {})
         questions.append({
             "id": question_id,
             "prompt": normalize_prompt(item.get("prompt")),
             "image": image,
-            "options": normalize_options(item.get("options")),
+            "imagePercent": pictures.picture_percent(item.get("imagePercent"), old.get("imagePercent")),
+            "options": normalize_options(item.get("options"), old.get("options")),
         })
     return questions
 
@@ -284,9 +288,10 @@ def normalize_prompt(raw):
     return fragments
 
 
-def normalize_options(raw):
+def normalize_options(raw, previous=None):
     options = []
     seen = set()
+    earlier = _by_id(previous)
     for index, item in enumerate(raw or [], start=1):
         if not isinstance(item, dict):
             continue
@@ -297,13 +302,23 @@ def normalize_options(raw):
         image = str(item.get("image") or "")
         if "/" in image or "\\" in image:
             image = ""
+        old = earlier.get(option_id, {})
         options.append({
             "id": option_id,
             "text": str(item.get("text") or ""),
             "image": image,
+            "imagePercent": pictures.picture_percent(item.get("imagePercent"), old.get("imagePercent")),
             "correct": bool(item.get("correct")),
         })
     return options
+
+
+def _by_id(items):
+    found = {}
+    for item in items or []:
+        if isinstance(item, dict) and item.get("id"):
+            found[str(item["id"])] = item
+    return found
 
 
 def delete_test(course, test_id):

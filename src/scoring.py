@@ -1,6 +1,7 @@
 import copy
 
 import gradebook
+import pictures
 
 
 class AttemptError(ValueError):
@@ -14,12 +15,15 @@ def to_student_test(test, course_id):
     for question in test.get("questions") or []:
         options = []
         for option in question.get("options") or []:
-            options.append({
+            student_option = {
                 "id": option["id"],
                 "text": option.get("text") or "",
                 "image": option_image_path(course_id, test["id"], question["id"], option),
                 "correct": bool(option.get("correct")),
-            })
+            }
+            if student_option["image"]:
+                student_option["imagePercent"] = pictures.picture_percent(option.get("imagePercent"), None)
+            options.append(student_option)
         student_question = {
             "id": question["id"],
             "prompt": copy.deepcopy(question.get("prompt") or []),
@@ -28,6 +32,7 @@ def to_student_test(test, course_id):
         picture = question_image_path(course_id, test["id"], question)
         if picture:
             student_question["image"] = picture
+            student_question["imagePercent"] = pictures.picture_percent(question.get("imagePercent"), None)
         questions.append(student_question)
     return {
         "id": test["id"],

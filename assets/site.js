@@ -230,9 +230,10 @@
       renderPrompt(block, question.prompt);
       if (question.image) {
         var figure = document.createElement("img");
-        figure.className = "question-figure";
+        figure.className = "test-picture";
         figure.src = question.image;
         figure.alt = "";
+        figure.style.maxHeight = (question.imagePercent || 20) + "vh";
         block.append(figure);
       }
       (question.options || []).forEach(function (option) {
@@ -246,8 +247,10 @@
         choice.append(text);
         if (option.image) {
           var image = document.createElement("img");
+          image.className = "test-picture";
           image.src = option.image;
           image.alt = "";
+          image.style.maxHeight = (option.imagePercent || 20) + "vh";
           choice.append(image);
         }
         block.append(choice);
