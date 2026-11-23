@@ -160,10 +160,10 @@
     "tests": [
       {
         "id": "t1",
-        "title": "Тест по теме 1 (структура сопряженных и редокс полимеров)",
+        "title": "Тест по теме 1 (Электронная структура, допирование и механизмы проводимости сопряженных полимеров)",
         "allowRetake": true,
-        "edition": "48b54119729abff9",
-        "publishedOn": "",
+        "edition": "361be6b5a3fa0385",
+        "publishedOn": "2026-11-24",
         "questions": [
           {
             "id": "q1",
@@ -178,25 +178,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t1/q1-oА-2f94c8cda0c6286d.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t1/q1-oБ-4d6811a8d49d6ecb.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t1/q1-oВ-e8ddab032bbf3628.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t1/q1-oГ-3f56404ab4394d59.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -213,25 +217,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t1/q2-oА-349946ffc8471bcf.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t1/q2-oБ-1d8c6bcd312792d1.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t1/q2-oВ-788fc5afb776d90c.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t1/q2-oГ-0a38f09df73ba6a1.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -248,25 +256,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t1/q3-oА-0a38f09df73ba6a1.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t1/q3-oБ-a7c635e0516e28ac.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t1/q3-oВ-349946ffc8471bcf.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t1/q3-oГ-1d8c6bcd312792d1.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -318,25 +330,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t1/q5-oА-08e0ba613df323fb.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t1/q5-oБ-e9ff69d558c43ce9.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t1/q5-oВ-cdd982e1b6d70b77.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t1/q5-oГ-c833b2b88a54db70.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -423,19 +439,22 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t1/q8-oА-9002b53e75f7efe5.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t1/q8-oБ-ce4b316b4f1e17f1.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t1/q8-oВ-a3c0b4baf8606869.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -566,25 +585,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t2/q2-oА-5c9e33e71651e486.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t2/q2-oБ-f23f44e765187149.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t2/q2-oВ-ef6ad59bca59c1ff.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t2/q2-oГ-8eeeb10f741a4f1e.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
@@ -706,25 +729,29 @@
                 "id": "oА",
                 "text": "А",
                 "image": "tests/published/c2/t2/q6-oА-f5cb68009ed38453.png",
-                "correct": true
+                "correct": true,
+                "imagePercent": 20
               },
               {
                 "id": "oБ",
                 "text": "Б",
                 "image": "tests/published/c2/t2/q6-oБ-5c9e33e71651e486.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oВ",
                 "text": "В",
                 "image": "tests/published/c2/t2/q6-oВ-ef6ad59bca59c1ff.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               },
               {
                 "id": "oГ",
                 "text": "Г",
                 "image": "tests/published/c2/t2/q6-oГ-8f3de6dc0fef01d7.png",
-                "correct": false
+                "correct": false,
+                "imagePercent": 20
               }
             ]
           },
